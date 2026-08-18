@@ -12,7 +12,7 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
@@ -26,7 +26,7 @@
 #include <sdktools>
 #include <cssdm>
 
-public Plugin:myinfo = 
+public Plugin myinfo =
 {
 	name = "CS:S DM Preset Spawns",
 	author = "AlliedModders LLC",
@@ -38,95 +38,95 @@ public Plugin:myinfo =
 #define MAX_SPAWNS			256
 
 
-new bool:g_AreWeSpawning = false;
-new g_SpawnCount = 0;
-new Float:g_SpawnOrigins[MAX_SPAWNS][3];
-new Float:g_SpawnAngles[MAX_SPAWNS][3];
-new Handle:g_hSpawnMenu = INVALID_HANDLE;
-new g_LastLocation[MAXPLAYERS+1];
+bool g_AreWeSpawning = false;
+int g_SpawnCount = 0;
+float g_SpawnOrigins[MAX_SPAWNS][3];
+float g_SpawnAngles[MAX_SPAWNS][3];
+Menu g_hSpawnMenu;
+int g_LastLocation[MAXPLAYERS+1];
 
-public OnPluginStart()
+public void OnPluginStart()
 {
 	RegAdminCmd("cssdm_spawn_menu", Command_SpawnMenu, ADMFLAG_CHANGEMAP, "Edits CS:S DM spawn points");
-	
-	g_hSpawnMenu = CreateMenu(Menu_EditSpawns);
-	SetMenuTitle(g_hSpawnMenu, "Spawn Point Editor");
-	AddMenuItem(g_hSpawnMenu, "nearest", "Teleport to nearest");
-	AddMenuItem(g_hSpawnMenu, "previous", "Teleport to previous");
-	AddMenuItem(g_hSpawnMenu, "next", "Teleport to next");
-	AddMenuItem(g_hSpawnMenu, "add", "Add position");
-	AddMenuItem(g_hSpawnMenu, "preinsert", "Insert position here");
-	AddMenuItem(g_hSpawnMenu, "delete", "Delete nearest");
-	AddMenuItem(g_hSpawnMenu, "clear", "Delete all");
+
+	g_hSpawnMenu = new Menu(Menu_EditSpawns);
+	g_hSpawnMenu.SetTitle("Spawn Point Editor");
+	g_hSpawnMenu.AddItem("nearest", "Teleport to nearest");
+	g_hSpawnMenu.AddItem("previous", "Teleport to previous");
+	g_hSpawnMenu.AddItem("next", "Teleport to next");
+	g_hSpawnMenu.AddItem("add", "Add position");
+	g_hSpawnMenu.AddItem("preinsert", "Insert position here");
+	g_hSpawnMenu.AddItem("delete", "Delete nearest");
+	g_hSpawnMenu.AddItem("clear", "Delete all");
 }
 
-public OnClientPutInServer(client)
+public void OnClientPutInServer(int client)
 {
 	g_LastLocation[client] = -1;
 }
 
 /* :TODO: we need this in core */
-Float:GetDistance(const Float:vec1[3], const Float:vec2[3])
+float GetDistance(const float vec1[3], const float vec2[3])
 {
-	decl Float:x, Float:y, Float:z;
-	
+	float x, y, z;
+
 	x = vec1[0] - vec2[0];
 	y = vec1[1] - vec2[1];
 	z = vec1[2] - vec2[2];
-	
+
 	return SquareRoot(x*x + y*y + z*z);
 }
 
-GetNearestSpawn(client)
+int GetNearestSpawn(int client)
 {
 	if (!g_SpawnCount)
 	{
 		return -1;
 	}
-	
-	new Float:clorigin[3];
+
+	float clorigin[3];
 	GetClientAbsOrigin(client, clorigin);
-	
-	new Float:low_diff = GetDistance(g_SpawnOrigins[0], clorigin);
-	new low_index = 0;
-	for (new i=1; i<g_SpawnCount; i++)
+
+	float low_diff = GetDistance(g_SpawnOrigins[0], clorigin);
+	int low_index = 0;
+	for (int i=1; i<g_SpawnCount; i++)
 	{
-		new Float:diff = GetDistance(g_SpawnOrigins[i], clorigin);
+		float diff = GetDistance(g_SpawnOrigins[i], clorigin);
 		if (diff < low_diff)
 		{
 			low_diff = diff;
 			low_index = i;
 		}
 	}
-	
+
 	return low_index;
 }
 
-bool:LoadMapConfig()
+bool LoadMapConfig()
 {
-	new String:map[64];
+	char map[64];
 	GetCurrentMap(map, sizeof(map));
-	
-	new String:game[64];
+
+	char game[64];
 	GetGameFolderName(game, sizeof(game));
-	
-	new String:path[255];
+
+	char path[PLATFORM_MAX_PATH];
 	Format(path, sizeof(path), "cfg/cssdm/spawns/%s/%s.txt", game, map);
-	
+
 	g_SpawnCount = 0;
-	
-	new Handle:file = OpenFile(path, "rt");
-	if (file == INVALID_HANDLE)
+
+	File file = OpenFile(path, "rt");
+	if (file == null)
 	{
 		LogError("Could not find spawn point file \"%s\"", path);
 		LogError("Defaulting to map-based spawns!");
 		return false;
 	}
-	
-	new String:buffer[255];
-	new String:parts[6][16];
-	new partCount;
-	while (!IsEndOfFile(file) && ReadFileLine(file, buffer, sizeof(buffer)))
+
+	char buffer[255];
+	char parts[6][16];
+	int partCount;
+	while (!file.EndOfFile() && file.ReadLine(buffer, sizeof(buffer)))
 	{
 		TrimString(buffer);
 		partCount = ExplodeString(buffer, " ", parts, 6, 16);
@@ -142,35 +142,35 @@ bool:LoadMapConfig()
 		g_SpawnAngles[g_SpawnCount][2] = StringToFloat(parts[5]);
 		g_SpawnCount++;
 	}
-	
-	CloseHandle(file);
-	
+
+	delete file;
+
 	LogMessage("Preset spawn points loaded (number %d) (map %s)", g_SpawnCount, map);
-	
+
 	return true;
 }
 
-bool:WriteMapConfig()
+bool WriteMapConfig()
 {
-	new String:map[64];
+	char map[64];
 	GetCurrentMap(map, sizeof(map));
-	
-	new String:game[64];
+
+	char game[64];
 	GetGameFolderName(game, sizeof(game));
-	
-	new String:path[255];
+
+	char path[PLATFORM_MAX_PATH];
 	Format(path, sizeof(path), "cfg/cssdm/spawns/%s/%s.txt", game, map);
-	
-	new Handle:file = OpenFile(path, "wt");
-	if (file == INVALID_HANDLE)
+
+	File file = OpenFile(path, "wt");
+	if (file == null)
 	{
 		LogError("Could not open spawn point file \"%s\" for writing.", path);
 		return false;
 	}
-	
-	for (new i=0; i<g_SpawnCount; i++)
+
+	for (int i=0; i<g_SpawnCount; i++)
 	{
-		WriteFileLine(file, "%f %f %f %f %f %f", 
+		file.WriteLine("%f %f %f %f %f %f",
 			g_SpawnOrigins[i][0],
 			g_SpawnOrigins[i][1],
 			g_SpawnOrigins[i][2],
@@ -178,92 +178,92 @@ bool:WriteMapConfig()
 			g_SpawnAngles[i][1],
 			g_SpawnAngles[i][2]);
 	}
-	
-	CloseHandle(file);
-	
+
+	delete file;
+
 	return true;
 }
 
-AddSpawnFromClient(client)
+int AddSpawnFromClient(int client)
 {
 	if (g_SpawnCount >= MAX_SPAWNS)
 	{
 		return -1;
 	}
-	
+
 	GetClientAbsOrigin(client, g_SpawnOrigins[g_SpawnCount]);
 	GetClientAbsAngles(client, g_SpawnAngles[g_SpawnCount]);
-	
-	new old = g_SpawnCount++;
-	
+
+	int old = g_SpawnCount++;
+
 	return old;
 }
 
-InsertSpawnFromClient(client, bool:pre, index)
+int InsertSpawnFromClient(int client, bool pre, int index)
 {
 	if (index == g_SpawnCount - 1 && !pre)
 	{
 		return AddSpawnFromClient(client);
 	}
-	
+
 	if (g_SpawnCount >= MAX_SPAWNS)
 	{
 		return -1;
 	}
-	
+
 	/* If this is a post-insertion, unmark the index for moving */
 	if (!pre)
 	{
 		index++;
 	}
-	
+
 	/* Move all of the slots down */
-	for (new i=g_SpawnCount-1; i>=index; i--)
+	for (int i=g_SpawnCount-1; i>=index; i--)
 	{
 		g_SpawnOrigins[i+1] = g_SpawnOrigins[i];
 		g_SpawnAngles[i+1] = g_SpawnAngles[i];
 	}
-	
+
 	GetClientAbsOrigin(client, g_SpawnOrigins[index]);
 	GetClientAbsAngles(client, g_SpawnAngles[index]);
-	
+
 	g_SpawnCount++;
-	
+
 	return index;
 }
 
-bool:DeleteSpawn(index)
+bool DeleteSpawn(int index)
 {
 	if (index < 0 || index >= g_SpawnCount)
 	{
 		return false;
 	}
-	
-	for (new i=index; i<g_SpawnCount-1; i++)
+
+	for (int i=index; i<g_SpawnCount-1; i++)
 	{
 		g_SpawnAngles[i] = g_SpawnAngles[i+1];
 		g_SpawnOrigins[i] = g_SpawnOrigins[i+1];
 	}
-	
+
 	g_SpawnCount--;
-	
+
 	return true;
 }
 
-public Action:Command_SpawnMenu(client, args)
+public Action Command_SpawnMenu(int client, int args)
 {
 	if (client == 0)
 	{
 		ReplyToCommand(client, "[CSSDM] This command is not available from the server console.");
 		return Plugin_Handled;
 	}
-	
-	DisplayMenu(g_hSpawnMenu, client, MENU_TIME_FOREVER);
-	
+
+	g_hSpawnMenu.Display(client, MENU_TIME_FOREVER);
+
 	return Plugin_Handled;
 }
 
-public Panel_VerifyDeleteSpawns(Handle:menu, MenuAction:action, param1, param2)
+public void Panel_VerifyDeleteSpawns(Menu menu, MenuAction action, int param1, int param2)
 {
 	if (action == MenuAction_Select)
 	{
@@ -277,17 +277,17 @@ public Panel_VerifyDeleteSpawns(Handle:menu, MenuAction:action, param1, param2)
 				PrintToChat(param1, "[CSSDM] All spawn points have been deleted.");
 			}
 		}
-		DisplayMenu(g_hSpawnMenu, param1, MENU_TIME_FOREVER);
+		g_hSpawnMenu.Display(param1, MENU_TIME_FOREVER);
 	}
 }
 
-public Menu_EditSpawns(Handle:menu, MenuAction:action, param1, param2)
+public void Menu_EditSpawns(Menu menu, MenuAction action, int param1, int param2)
 {
 	if (action == MenuAction_Select)
 	{
 		if (param2 == 0)
 		{
-			new index = GetNearestSpawn(param1);
+			int index = GetNearestSpawn(param1);
 			if (index == -1)
 			{
 				PrintToChat(param1, "[CSSDM] There are no spawn points.");
@@ -301,7 +301,7 @@ public Menu_EditSpawns(Handle:menu, MenuAction:action, param1, param2)
 			{
 				PrintToChat(param1, "[CSSDM] There are no spawn points.");
 			} else {
-				new index = g_LastLocation[param1] + 1;
+				int index = g_LastLocation[param1] + 1;
 				if (index >= g_SpawnCount)
 				{
 					index = 0;
@@ -315,7 +315,7 @@ public Menu_EditSpawns(Handle:menu, MenuAction:action, param1, param2)
 			{
 				PrintToChat(param1, "[CSSDM] There are no spawn points.");
 			} else {
-				new index = g_LastLocation[param1] - 1;
+				int index = g_LastLocation[param1] - 1;
 				if (index < 0)
 				{
 					index = g_SpawnCount - 1;
@@ -325,7 +325,7 @@ public Menu_EditSpawns(Handle:menu, MenuAction:action, param1, param2)
 				g_LastLocation[param1] = index;
 			}
 		} else if (param2 == 5) {
-			new index = GetNearestSpawn(param1);
+			int index = GetNearestSpawn(param1);
 			if (index == -1)
 			{
 				PrintToChat(param1, "[CSSDM] There are no spawn points.");
@@ -343,7 +343,7 @@ public Menu_EditSpawns(Handle:menu, MenuAction:action, param1, param2)
 				}
 			}
 		} else if (param2 == 3) {
-			new index;
+			int index;
 			if ((index = AddSpawnFromClient(param1)) == -1)
 			{
 				PrintToChat(param1, "[CSSDM] Could not add spawn (max limit reached).");
@@ -356,8 +356,8 @@ public Menu_EditSpawns(Handle:menu, MenuAction:action, param1, param2)
 				}
 			}
 		} else if (param2 == 4) {
-			new index = g_LastLocation[param1];
-			new bool:pre = true;
+			int index = g_LastLocation[param1];
+			bool pre = true;
 			if (index == -1 || index >= g_SpawnCount)
 			{
 				index = g_SpawnCount - 1;
@@ -376,65 +376,64 @@ public Menu_EditSpawns(Handle:menu, MenuAction:action, param1, param2)
 			}
 		} else if (param2 == 6) {
 			/* Of course, we ask the user first. */
-			new Handle:panel = CreatePanel();
-			SetPanelTitle(panel, "Delete all spawn points?");
-			DrawPanelItem(panel, "Yes");
-			DrawPanelItem(panel, "No");
-			SendPanelToClient(panel, param1, Panel_VerifyDeleteSpawns, MENU_TIME_FOREVER);
-			CloseHandle(panel);
+			Panel panel = new Panel();
+			panel.SetTitle("Delete all spawn points?");
+			panel.DrawItem("Yes");
+			panel.DrawItem("No");
+			panel.Send(param1, Panel_VerifyDeleteSpawns, MENU_TIME_FOREVER);
+			delete panel;
 			return;
 		}
 		/* Redraw the menu */
-		DisplayMenu(g_hSpawnMenu, param1, MENU_TIME_FOREVER);	
+		g_hSpawnMenu.Display(param1, MENU_TIME_FOREVER);
 	}
 }
 
-public DM_OnStartup()
+public void DM_OnStartup()
 {
-	new String:method[32];
+	char method[32];
 	DM_GetSpawnMethod(method, sizeof(method));
-	
-	if (strcmp(method, "preset") != 0)
+
+	if (!StrEqual(method, "preset"))
 	{
 		return;
 	}
-	
+
 	g_AreWeSpawning = LoadMapConfig();
 }
 
-public Action:DM_OnSetSpawnMethod(const String:method[])
+public Action DM_OnSetSpawnMethod(const char[] method)
 {
-	g_AreWeSpawning = (strcmp(method, "preset") == 0);
-	
+	g_AreWeSpawning = StrEqual(method, "preset");
+
 	if (!g_AreWeSpawning)
 	{
 		return Plugin_Continue;
 	}
-	
+
 	if (!LoadMapConfig())
 	{
 		g_AreWeSpawning = false;
 		return Plugin_Continue;
 	}
-	
+
 	return Plugin_Stop;
 }
 
-public DM_OnClientSpawned(client)
+public void DM_OnClientSpawned(int client)
 {
 	if (!g_AreWeSpawning || !g_SpawnCount)
 	{
 		return;
 	}
-	
-	new maxClients = GetMaxClients();
-	new startPoint = GetRandomInt(0, g_SpawnCount-1);
-	
+
+	int startPoint = GetRandomInt(0, g_SpawnCount-1);
+
 	/* Prefetch player origins */
-	decl Float:origins[65][3];
-	new numToCheck = 0;
-	
-	for (new i=1; i<=maxClients; i++)
+	float origins[65][3];
+	int numToCheck = 0;
+
+	for (int i=1; i<=MaxClients; i++)
 	{
 		if (i == client || !IsClientInGame(i))
 		{
@@ -443,19 +442,19 @@ public DM_OnClientSpawned(client)
 		GetClientAbsOrigin(i, origins[numToCheck]);
 		numToCheck++;
 	}
-	
+
 	/* Cycle through until we get a spawn point */
-	new bool:use_this_point;
-	new checked = 0;
+	bool use_this_point;
+	int checked = 0;
 	while (checked < g_SpawnCount)
 	{
 		if (startPoint >= g_SpawnCount)
 		{
 			startPoint = 0;
 		}
-		
+
 		use_this_point = true;
-		for (new i=0; i<numToCheck; i++)
+		for (int i=0; i<numToCheck; i++)
 		{
 			if (GetDistance(g_SpawnOrigins[startPoint], origins[i]) < 600.0)
 			{
@@ -463,20 +462,20 @@ public DM_OnClientSpawned(client)
 				break;
 			}
 		}
-		
+
 		if (use_this_point)
 		{
 			break;
 		}
-		
+
 		checked++;
 		startPoint++;
 	}
-	
+
 	if (startPoint >= g_SpawnCount)
 	{
 		startPoint = 0;
 	}
-		
+
 	TeleportEntity(client, g_SpawnOrigins[startPoint], g_SpawnAngles[startPoint], NULL_VECTOR);
 }
