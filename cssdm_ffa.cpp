@@ -151,7 +151,7 @@ bool DM_Prepare_FFA(char *error, size_t maxlength)
 	if (!g_pDmConf->GetOffset("TakeDmgPatch2", &g_takedmg_offset[1])
 		|| !g_takedmg_offset[1])
 	{
-		snprintf(error, maxlength, "Could not find TakeDmgPatch1 offset");
+		snprintf(error, maxlength, "Could not find TakeDmgPatch2 offset");
 		return false;
 	}
 	if (!DM_FFA_LoadPatch("TakeDmgPatch2", &g_takedmg_patch[1], error, maxlength))
