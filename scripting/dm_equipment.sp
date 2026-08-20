@@ -13,7 +13,7 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
@@ -31,57 +31,57 @@
 #define CSSDM_GUNMENU_RANDOM	2
 
 /** Plugin Stuff */
-new Handle:cssdm_enable_equipment;					/** cssdm_enable_equipment cvar */
-new Handle:g_SpawnTimers[MAXPLAYERS+1];				/* Post-spawn timers */
-new Handle:g_hPrimaryMenu = INVALID_HANDLE;			/* Priamry menu Handle */
-new Handle:g_hSecondaryMenu = INVALID_HANDLE;		/* Secondary menu Handle */
-new Handle:g_hEquipMenu = INVALID_HANDLE;			/* Main equipment menu */
-new bool:g_IsEnabled = false;						/* Whether the plugin should work */
-new g_PrimaryChoices[MAXPLAYERS+1];					/* Primary weapon selections */
-new g_SecondaryChoices[MAXPLAYERS+1];				/* Secondary weapon selections */
-new bool:g_GunMenuEnabled[MAXPLAYERS+1];			/* Whether the gun menu is enabled */
-new bool:g_GunMenuAvailable[MAXPLAYERS+1];			/* Whether the gun menu is available */
-new bool:g_bIsGo = false;							/* Are we running on CS:GO? */
+ConVar cssdm_enable_equipment;					/** cssdm_enable_equipment cvar */
+Handle g_SpawnTimers[MAXPLAYERS+1];				/* Post-spawn timers */
+Menu g_hPrimaryMenu = null;			/* Priamry menu Handle */
+Menu g_hSecondaryMenu = null;		/* Secondary menu Handle */
+Menu g_hEquipMenu = null;			/* Main equipment menu */
+bool g_IsEnabled = false;						/* Whether the plugin should work */
+int g_PrimaryChoices[MAXPLAYERS+1];					/* Primary weapon selections */
+int g_SecondaryChoices[MAXPLAYERS+1];				/* Secondary weapon selections */
+bool g_GunMenuEnabled[MAXPLAYERS+1];			/* Whether the gun menu is enabled */
+bool g_GunMenuAvailable[MAXPLAYERS+1];			/* Whether the gun menu is available */
+bool g_bIsGo = false;							/* Are we running on CS:GO? */
 
 /** HUMAN CONFIGS */
-new g_PrimaryList[CSSDM_MAX_WEAPONS];
-new g_SecondaryList[CSSDM_MAX_WEAPONS];
-new g_PrimaryCount = 0;
-new g_SecondaryCount = 0;
-new g_PrimaryMenu = CSSDM_GUNMENU_YES;
-new g_SecondaryMenu = CSSDM_GUNMENU_YES;
-new bool:g_AllowBuy = false;
-new g_ArmorAmount = 100;
-new bool:g_Helmets = true;
-new g_Flashes = 0;
-new bool:g_Smokes = false;
-new bool:g_HEs = false;
-new bool:g_NightVision = false;
-new bool:g_DefuseKits = true;
-new bool:g_AllowGunCommand = true;
-new g_HealthAmount = 100;
+int g_PrimaryList[CSSDM_MAX_WEAPONS];
+int g_SecondaryList[CSSDM_MAX_WEAPONS];
+int g_PrimaryCount = 0;
+int g_SecondaryCount = 0;
+int g_PrimaryMenu = CSSDM_GUNMENU_YES;
+int g_SecondaryMenu = CSSDM_GUNMENU_YES;
+bool g_AllowBuy = false;
+int g_ArmorAmount = 100;
+bool g_Helmets = true;
+int g_Flashes = 0;
+bool g_Smokes = false;
+bool g_HEs = false;
+bool g_NightVision = false;
+bool g_DefuseKits = true;
+bool g_AllowGunCommand = true;
+int g_HealthAmount = 100;
 //CSGO
-new bool:g_Decoy = false;
-new bool:g_Taser = true;
+bool g_Decoy = false;
+bool g_Taser = true;
 
 /** BOT CONFIGS */
-new g_BotPrimaryList[CSSDM_MAX_WEAPONS];
-new g_BotSecondaryList[CSSDM_MAX_WEAPONS];
-new g_BotPrimaryCount = 0;
-new g_BotSecondaryCount = 0;
-new g_BotArmor = 100;
-new bool:g_BotHelmets = false;
-new g_BotFlashes = 0;
-new bool:g_BotSmokes = false;
-new bool:g_BotHEs = false;
-new bool:g_BotDefuseKits = true;
-new g_BotHealthAmount = 100;
+int g_BotPrimaryList[CSSDM_MAX_WEAPONS];
+int g_BotSecondaryList[CSSDM_MAX_WEAPONS];
+int g_BotPrimaryCount = 0;
+int g_BotSecondaryCount = 0;
+int g_BotArmor = 100;
+bool g_BotHelmets = false;
+int g_BotFlashes = 0;
+bool g_BotSmokes = false;
+bool g_BotHEs = false;
+bool g_BotDefuseKits = true;
+int g_BotHealthAmount = 100;
 //CSGO
-new bool:g_BotDecoy = false;
-new bool:g_BotTaser = true;
+bool g_BotDecoy = false;
+bool g_BotTaser = true;
 
 /** PUBLIC INFO */
-public Plugin:myinfo = 
+public Plugin myinfo =
 {
 	name = "CS:S DM Equipment",
 	author = "AlliedModders LLC",
@@ -93,79 +93,79 @@ public Plugin:myinfo =
 /******************
  * IMPLEMENTATION *
  ******************/
- 
-public OnPluginStart()
+
+public void OnPluginStart()
 {
-	new String:game[64];
+	char game[64];
 	GetGameFolderName(game, sizeof(game));
 	if (StrEqual(game, "csgo", false))
 	{
 		g_bIsGo = true;
 	}
-	
+
 	LoadTranslations("cssdm.phrases");
-	
+
 	RegConsoleCmd("say", Command_Say);
 	RegConsoleCmd("say_team", Command_Say);
-	
+
 	cssdm_enable_equipment = CreateConVar("cssdm_enable_equipment", "1", "Sets whether the equipment plugin is enabled");
-	HookConVarChange(cssdm_enable_equipment, OnEquipmentEnableChange);
-	
-	g_hEquipMenu = CreateMenu(Menu_EquipHandler, MenuAction_DrawItem|MenuAction_DisplayItem);
-	SetMenuTitle(g_hEquipMenu, "Weapon Options:");
-	SetMenuExitButton(g_hEquipMenu, false);
-	AddMenuItem(g_hEquipMenu, "", "New weapons");
-	AddMenuItem(g_hEquipMenu, "", "Same weapons");
-	AddMenuItem(g_hEquipMenu, "", "Same weapons every time");
-	AddMenuItem(g_hEquipMenu, "", "Random weapons");
-	AddMenuItem(g_hEquipMenu, "", "Random weapons every time");
+	cssdm_enable_equipment.AddChangeHook(OnEquipmentEnableChange);
+
+	g_hEquipMenu = new Menu(Menu_EquipHandler, MenuAction_DrawItem|MenuAction_DisplayItem);
+	g_hEquipMenu.SetTitle("Weapon Options:");
+	g_hEquipMenu.ExitButton = false;
+	g_hEquipMenu.AddItem("", "New weapons");
+	g_hEquipMenu.AddItem("", "Same weapons");
+	g_hEquipMenu.AddItem("", "Same weapons every time");
+	g_hEquipMenu.AddItem("", "Random weapons");
+	g_hEquipMenu.AddItem("", "Random weapons every time");
 }
 
-public OnEquipmentEnableChange(Handle:convar, const String:oldValue[], const String:newValue[])
+public void OnEquipmentEnableChange(ConVar convar, const char[] oldValue, const char[] newValue)
 {
 	g_IsEnabled = StringToInt(newValue) ? true : false;
 }
 
-public OnConfigsExecuted()
+public void OnConfigsExecuted()
 {
 	LoadDefaults();
-	
+
 	if ((g_IsEnabled = LoadConfigFile("cfg/cssdm/cssdm.equip.txt")) == false)
 	{
 		LogError("[CSSDM] Could not find equipment file \"%s\"", "cfg/cssdm/cssdm.equip.txt");
 		return;
 	}
-	
-	if (!GetConVarInt(cssdm_enable_equipment))
+
+	if (!cssdm_enable_equipment.BoolValue)
 	{
 		g_IsEnabled = false;
 		return;
 	}
-	
+
 	/** See if there is a map version */
-	decl String:map[64];
-	decl String:path[255];
+	char map[64];
+	char path[PLATFORM_MAX_PATH];
 	GetCurrentMap(map, sizeof(map));
 	Format(path, sizeof(path), "cfg/cssdm/maps/%s.equip.txt", map);
-	
+
 	if (FileExists(path))
 	{
 		LoadConfigFile(path);
 	}
 }
 
-public Action:DM_OnClientDeath(client)
+public Action DM_OnClientDeath(int client)
 {
 	if (g_SpawnTimers[client] != INVALID_HANDLE)
 	{
 		KillTimer(g_SpawnTimers[client]);
 		g_SpawnTimers[client] = INVALID_HANDLE;
 	}
-	
+
 	g_GunMenuAvailable[client] = true;
 }
 
-public OnClientPutInServer(client)
+public void OnClientPutInServer(int client)
 {
 	g_GunMenuEnabled[client] = true;
 	g_GunMenuAvailable[client] = true;
@@ -173,7 +173,7 @@ public OnClientPutInServer(client)
 	g_SecondaryChoices[client] = -1;
 }
 
-public OnClientDisconnect(client)
+public void OnClientDisconnect(int client)
 {
 	if (g_SpawnTimers[client] != INVALID_HANDLE)
 	{
@@ -182,15 +182,15 @@ public OnClientDisconnect(client)
 	}
 }
 
-public DM_OnClientSpawned(client)
+public void DM_OnClientSpawned(int client)
 {
 	g_GunMenuAvailable[client] = true;
-	
+
 	if (!ShouldRun())
 	{
 		return;
 	}
-	
+
 	if (!IsFakeClient(client))
 	{
 		if (g_ArmorAmount > 0)
@@ -266,20 +266,20 @@ public DM_OnClientSpawned(client)
 	}
 }
 
-public Action:PlayerPostSpawn(Handle:timer, any:client)
+public Action PlayerPostSpawn(Handle timer, int client)
 {
 	g_SpawnTimers[client] = INVALID_HANDLE;
-	
+
 	if (!ShouldRun())
 	{
 		return Plugin_Stop;
 	}
-	
+
 	if (IsFakeClient(client))
 	{
 		if (g_BotSecondaryCount > 0)
 		{
-			new index;
+			int index;
 			if (g_BotSecondaryCount == 1)
 			{
 				index = g_BotSecondaryList[0];
@@ -287,13 +287,13 @@ public Action:PlayerPostSpawn(Handle:timer, any:client)
 				index = GetRandomInt(0, g_BotSecondaryCount-1);
 				index = g_BotSecondaryList[index];
 			}
-			decl String:classname[64];
+			char classname[64];
 			DM_GetWeaponClassname(index, classname, sizeof(classname));
 			GivePlayerItem(client, classname);
 		}
 		if (g_BotPrimaryCount > 0)
 		{
-			new index;
+			int index;
 			if (g_BotPrimaryCount == 1)
 			{
 				index = g_BotPrimaryList[0];
@@ -301,7 +301,7 @@ public Action:PlayerPostSpawn(Handle:timer, any:client)
 				index = GetRandomInt(0, g_BotPrimaryCount-1);
 				index = g_BotPrimaryList[index];
 			}
-			decl String:classname[64];
+			char classname[64];
 			DM_GetWeaponClassname(index, classname, sizeof(classname));
 			GivePlayerItem(client, classname);
 		}
@@ -314,8 +314,8 @@ public Action:PlayerPostSpawn(Handle:timer, any:client)
 		{
 			SetEntProp(client, Prop_Send, "m_bHasDefuser", 1);
 		}
-		
-		new numGiven = 0;
+
+		int numGiven = 0;
 		/* First, check if we should only be giving one of something automatically */
 		if ((g_SecondaryMenu == CSSDM_GUNMENU_RANDOM || g_SecondaryMenu == CSSDM_GUNMENU_YES)
 			&& g_SecondaryCount == 1)
@@ -326,7 +326,7 @@ public Action:PlayerPostSpawn(Handle:timer, any:client)
 			GivePrimary(client, g_PrimaryCount);
 			numGiven++;
 		}
-		
+
 		if ((g_PrimaryMenu == CSSDM_GUNMENU_RANDOM || g_PrimaryMenu == CSSDM_GUNMENU_YES)
 			&& g_PrimaryCount == 1)
 		{
@@ -336,78 +336,78 @@ public Action:PlayerPostSpawn(Handle:timer, any:client)
 			GiveSecondary(client, g_SecondaryCount);
 			numGiven++;
 		}
-		
+
 		/* If we've already given two weapons, there is no need for a menu. */
 		if (numGiven == 2)
 		{
 			return Plugin_Stop;
 		}
-		
+
 		if (g_GunMenuEnabled[client])
 		{
-			DisplayMenu(g_hEquipMenu, client, MENU_TIME_FOREVER);
+			g_hEquipMenu.Display(client, MENU_TIME_FOREVER);
 		} else {
 			GiveBothFromChoices(client);
 		}
 	}
-	
+
 	return Plugin_Stop;
 }
 
-public Action:Command_Say(client, args)
+public Action Command_Say(int client, int args)
 {
 	if (!ShouldRun())
 	{
 		return Plugin_Continue;
 	}
-	
-	new String:text[192];
+
+	char text[192];
 	GetCmdArg(1, text, sizeof(text));
-	
-	if (strcmp(text, "guns") == 0)
+
+	if (StrEqual(text, "guns"))
 	{
 		if (!g_AllowGunCommand)
 		{
 			PrintToChat(client, "[CSSDM] %t", "GunsMenuDisabled");
 			return Plugin_Handled;
 		}
-		
+
 		if (!ChooseFromSecondary() && !ChooseFromPrimary())
 		{
 			PrintToChat(client, "[CSSDM] %t", "GunsMenuNotAvailable");
 			return Plugin_Handled;
 		}
-		
+
 		if (g_GunMenuEnabled[client])
 		{
 			PrintToChat(client, "[CSSDM] %t", "GunsMenuAlreadyEnabled");
 			return Plugin_Handled;
 		}
-		
+
 		g_GunMenuEnabled[client] = true;
 		if (!g_GunMenuAvailable[client])
 		{
 			PrintToChat(client, "[CSSDM] %t", "GunsMenuReactivated");
 		} else {
-			DisplayMenu(g_hEquipMenu, client, MENU_TIME_FOREVER);
+			g_hEquipMenu.Display(client, MENU_TIME_FOREVER);
 		}
-		
+
 		return Plugin_Handled;
 	}
-	
+
 	return Plugin_Continue;
 }
 
-public Action:OnClientCommand(client, args)
+public Action OnClientCommand(int client, int args)
 {
 	if (!ShouldRun() || g_AllowBuy)
 	{
 		return Plugin_Continue;
 	}
-	
-	decl String:cmd[32];
+
+	char cmd[32];
 	GetCmdArg(0, cmd, sizeof(cmd));
-	
+
 	if (StrEqual(cmd, "buy")
 		|| StrEqual(cmd, "autobuy")
 		|| StrEqual(cmd, "rebuy")
@@ -416,17 +416,17 @@ public Action:OnClientCommand(client, args)
 	{
 		return Plugin_Handled;
 	}
-	
+
 	return Plugin_Continue;
 }
 
-public Menu_EquipHandler(Handle:menu, MenuAction:action, param1, param2)
+public int Menu_EquipHandler(Menu menu, MenuAction action, int param1, int param2)
 {
 	if (!ShouldRun())
 	{
 		return 0;
 	}
-	
+
 	if (action == MenuAction_DrawItem)
 	{
 		if (param2 == 1 || param2 == 2)
@@ -444,9 +444,9 @@ public Menu_EquipHandler(Handle:menu, MenuAction:action, param1, param2)
 		{
 			if (ChooseFromSecondary())
 			{
-				DisplayMenu(g_hSecondaryMenu, param1, MENU_TIME_FOREVER);
+				g_hSecondaryMenu.Display(param1, MENU_TIME_FOREVER);
 			} else if (ChooseFromPrimary()) {
-				DisplayMenu(g_hPrimaryMenu, param1, MENU_TIME_FOREVER);
+				g_hPrimaryMenu.Display(param1, MENU_TIME_FOREVER);
 			}
 		} else if (param2 == 1) {
 			GiveBothFromChoices(param1);
@@ -468,30 +468,30 @@ public Menu_EquipHandler(Handle:menu, MenuAction:action, param1, param2)
 	}
 	else if (action == MenuAction_DisplayItem)
 	{
-		decl style;
-		decl String:info[12], String:lang_phrase[32];
-		
-		if (!GetMenuItem(menu, param2, info, sizeof(info), style, lang_phrase, sizeof(lang_phrase)))
+		int style;
+		char info[12], lang_phrase[32];
+
+		if (menu.GetItem(param2, info, sizeof(info), style, lang_phrase, sizeof(lang_phrase)))
 		{
 			return 0;
 		}
-		
-		decl String:t_phrase[64];
+
+		char t_phrase[64];
 		Format(t_phrase, sizeof(t_phrase), "%T", lang_phrase, param1);
-		
+
 		return RedrawMenuItem(t_phrase);
 	}
-	
+
 	return 0;
 }
 
-public Menu_PrimaryHandler(Handle:menu, MenuAction:action, param1, param2)
+public int Menu_PrimaryHandler(Menu menu, MenuAction action, int param1, int param2)
 {
 	if (!ShouldRun())
 	{
 		return 0;
 	}
-	
+
 	if (action == MenuAction_DrawItem)
 	{
 		return ITEMDRAW_DEFAULT;
@@ -502,24 +502,24 @@ public Menu_PrimaryHandler(Handle:menu, MenuAction:action, param1, param2)
 	}
 	else if (action == MenuAction_Display)
 	{
-		new Handle:hPanel = Handle:param2;
-		decl String:title[128];
-		
+		Panel hPanel = view_as<Panel>(param2);
+		char title[128];
+
 		Format(title, sizeof(title), "%T:", "Primary weapon", param1);
-		
-		SetPanelTitle(hPanel, title);
+
+		hPanel.SetTitle(title);
 	}
-	
+
 	return 0;
 }
 
-public Menu_SecondaryHandler(Handle:menu, MenuAction:action, param1, param2)
+public int Menu_SecondaryHandler(Menu menu, MenuAction action, int param1, int param2)
 {
 	if (!ShouldRun())
 	{
 		return 0;
 	}
-	
+
 	if (action == MenuAction_DrawItem)
 	{
 		return ITEMDRAW_DEFAULT;
@@ -529,7 +529,7 @@ public Menu_SecondaryHandler(Handle:menu, MenuAction:action, param1, param2)
 		GiveSecondary(param1, param2);
 		if (ChooseFromPrimary())
 		{
-			DisplayMenu(g_hPrimaryMenu, param1, MENU_TIME_FOREVER);
+			g_hPrimaryMenu.Display(param1, MENU_TIME_FOREVER);
 		}
 	}
 	else if (action == MenuAction_Cancel
@@ -537,62 +537,62 @@ public Menu_SecondaryHandler(Handle:menu, MenuAction:action, param1, param2)
 	{
 		if (ChooseFromPrimary())
 		{
-			DisplayMenu(g_hPrimaryMenu, param1, MENU_TIME_FOREVER);
+			g_hPrimaryMenu.Display(param1, MENU_TIME_FOREVER);
 		}
 	}
 	else if (action == MenuAction_Display)
 	{
-		new Handle:hPanel = Handle:param2;
-		decl String:title[128];
-		
+		Panel hPanel = view_as<Panel>(param2);
+		char title[128];
+
 		Format(title, sizeof(title), "%T:", "Secondary weapon", param1);
-		
-		SetPanelTitle(hPanel, title);
+
+		hPanel.SetTitle(title);
 	}
-	
+
 	return 0;
 }
 
-bool:ChooseFromPrimary()
+bool ChooseFromPrimary()
 {
 	return (g_PrimaryMenu == CSSDM_GUNMENU_YES
 			&& g_PrimaryCount > 1);
 }
 
-bool:ChooseFromSecondary()
+bool ChooseFromSecondary()
 {
 	return (g_SecondaryMenu == CSSDM_GUNMENU_YES
 			&& g_SecondaryCount > 1);
 }
 
-GiveWeapon(client, index)
+void GiveWeapon(int client, int index)
 {
 	if (!IsPlayerAlive(client))
 	{
 		return;
 	}
 
-	new DmWeaponType:type = DM_GetWeaponType(index);
-	
-	new entity = DM_GetClientWeapon(client, type);
+	DmWeaponType type = DM_GetWeaponType(index);
+
+	int entity = DM_GetClientWeapon(client, type);
 	if (entity != -1)
 	{
 		DM_DropWeapon(client, entity);
 	}
-	
-	new String:cls[64];
+
+	char cls[64];
 	DM_GetWeaponClassname(index, cls, sizeof(cls));
-	
+
 	GivePlayerItem(client, cls);
 }
 
-GiveBothFromChoices(client)
+void GiveBothFromChoices(int client)
 {
 	if (ChooseFromPrimary())
 	{
 		GivePrimary(client, g_PrimaryChoices[client]);
 	}
-	
+
 	if (ChooseFromSecondary())
 	{
 		GiveSecondary(client, g_SecondaryChoices[client]);
@@ -604,14 +604,14 @@ GiveBothFromChoices(client)
  * If the list_index is > the count, we choose one randomly.
  * This is a hack so we can append "Random" to the choice list.
  */
-GivePrimary(client, list_index)
+void GivePrimary(int client, int list_index)
 {
 	if (list_index < 0)
 	{
 		return;
 	}
-	
-	new weapon_index;
+
+	int weapon_index;
 	if (list_index >= g_PrimaryCount)
 	{
 		if (g_PrimaryCount > 1)
@@ -626,9 +626,9 @@ GivePrimary(client, list_index)
 	} else {
 		weapon_index = g_PrimaryList[list_index];
 	}
-	
+
 	g_PrimaryChoices[client] = list_index;
-	
+
 	GiveWeapon(client, weapon_index);
 }
 
@@ -637,14 +637,14 @@ GivePrimary(client, list_index)
  * If the list_index is > the count, we choose one randomly.
  * This is a hack so we can append "Random" to the choice list.
  */
-GiveSecondary(client, list_index)
+void GiveSecondary(int client, int list_index)
 {
 	if (list_index < 0)
 	{
 		return;
 	}
-	
-	new weapon_index;
+
+	int weapon_index;
 	if (list_index >= g_SecondaryCount)
 	{
 		if (g_SecondaryCount > 1)
@@ -659,27 +659,27 @@ GiveSecondary(client, list_index)
 	} else {
 		weapon_index = g_SecondaryList[list_index];
 	}
-	
+
 	g_SecondaryChoices[client] = list_index;
-	
+
 	GiveWeapon(client, weapon_index);
 }
 
-bool:ShouldRun()
+bool ShouldRun()
 {
 	return (DM_IsRunning() && g_IsEnabled);
 }
 
-bool:KvGetYesOrNo(Handle:kv, const String:key[], bool:curdefault)
+bool KvGetYesOrNo(KeyValues kv, const char[] key, bool curdefault)
 {
-	decl String:value[12];
-	KvGetString(kv, key, value, sizeof(value), curdefault ? "yes" : "no");
-	return (strcmp(value, "yes") == 0);
+	char value[12];
+	kv.GetString(key, value, sizeof(value), curdefault ? "yes" : "no");
+	return StrEqual(value, "yes");
 }
 
-KvGetGunMenu(Handle:kv, const String:key[], def)
+int KvGetGunMenu(KeyValues kv, const char[] key, int def)
 {
-	decl String:sdef[12];
+	char sdef[12];
 	if (def == CSSDM_GUNMENU_YES)
 	{
 		strcopy(sdef, sizeof(sdef), "yes");
@@ -688,21 +688,21 @@ KvGetGunMenu(Handle:kv, const String:key[], def)
 	} else {
 		strcopy(sdef, sizeof(sdef), "no");
 	}
-	
-	decl String:value[12];
-	KvGetString(kv, key, value, sizeof(value), sdef);
-	
-	if (strcmp(value, "yes") == 0)
+
+	char value[12];
+	kv.GetString(key, value, sizeof(value), sdef);
+
+	if (StrEqual(value, "yes"))
 	{
 		return CSSDM_GUNMENU_YES;
-	} else if (strcmp(value, "random") == 0) {
+	} else if (StrEqual(value, "random")) {
 		return CSSDM_GUNMENU_RANDOM;
 	}
-	
+
 	return CSSDM_GUNMENU_NO;
 }
 
-LoadDefaults()
+void LoadDefaults()
 {
 	g_PrimaryMenu = CSSDM_GUNMENU_YES;
 	g_SecondaryMenu = CSSDM_GUNMENU_YES;
@@ -718,34 +718,35 @@ LoadDefaults()
 	g_AllowGunCommand = true;
 }
 
-bool:LoadConfigFile(const String:path[])
+bool LoadConfigFile(const char[] path)
 {
-	new Handle:kv = CreateKeyValues("Equipment");
-	if (!FileToKeyValues(kv, path))
+	KeyValues kv = new KeyValues("Equipment");
+	if (!kv.ImportFromFile(path))
 	{
+		delete kv;
 		return false;
 	}
-	
-	decl String:value[255];
-	
+
+	char value[255];
+
 	/* Load settings */
-	if (KvJumpToKey(kv, "Settings"))
+	if (kv.JumpToKey("Settings"))
 	{
 		g_AllowGunCommand = KvGetYesOrNo(kv, "guns_command", g_AllowGunCommand);
-		KvGoBack(kv);
+		kv.GoBack();
 	}
-	
+
 	/* Load menu options */
-	if (KvJumpToKey(kv, "Menus"))
+	if (kv.JumpToKey("Menus"))
 	{
 		g_PrimaryMenu = KvGetGunMenu(kv, "primary", g_PrimaryMenu);
 		g_SecondaryMenu = KvGetGunMenu(kv, "secondary", g_SecondaryMenu);
 		g_AllowBuy = KvGetYesOrNo(kv, "buy", g_AllowBuy);
-		KvGoBack(kv);
+		kv.GoBack();
 	}
-	
+
 	/* Load automatic stuff */
-	if (KvJumpToKey(kv, "AutoItems"))
+	if (kv.JumpToKey("AutoItems"))
 	{
 		g_ArmorAmount = KvGetNum(kv, "armor", g_ArmorAmount);
 		g_Flashes = KvGetNum(kv, "flashbangs", g_Flashes);
@@ -757,158 +758,158 @@ bool:LoadConfigFile(const String:path[])
 		g_HealthAmount = KvGetNum(kv, "health", g_HealthAmount);
 		g_Decoy = KvGetYesOrNo(kv, "decoy", g_Decoy);
 		g_Taser = KvGetYesOrNo(kv, "taser", g_Taser);
-		KvGoBack(kv);
+		kv.GoBack();
 	}
-	
+
 	/* Load bot items */
-	if (KvJumpToKey(kv, "BotItems"))
+	if (kv.JumpToKey("BotItems"))
 	{
 		/* Clear out old lists first */
 		g_BotPrimaryCount = 0;
 		g_BotSecondaryCount = 0;
-		
-		if (KvGotoFirstSubKey(kv, false))
+
+		if (kv.GotoFirstSubKey(false))
 		{
 			do
 			{
-				KvGetSectionName(kv, value, sizeof(value));
-				if (strcmp(value, "weapon") == 0)
+				kv.GetSectionName(value, sizeof(value));
+				if (StrEqual(value, "weapon"))
 				{
-					KvGetString(kv, NULL_STRING, value, sizeof(value));
-					new index = DM_GetWeaponID(value);
+					kv.GetString(NULL_STRING, value, sizeof(value));
+					int index = DM_GetWeaponID(value);
 					if (index != -1)
 					{
-						new DmWeaponType:type = DM_GetWeaponType(index);
+						DmWeaponType type = DM_GetWeaponType(index);
 						if (type == DmWeapon_Primary && g_BotPrimaryCount < CSSDM_MAX_WEAPONS)
 						{
 							g_BotPrimaryList[g_BotPrimaryCount++] = index;
 						} else if (type == DmWeapon_Secondary && g_BotSecondaryCount < CSSDM_MAX_WEAPONS) {
 							g_BotSecondaryList[g_BotSecondaryCount++] = index;
 						}
-					}					
-				} else if (strcmp(value, "armor") == 0) {
-					g_BotArmor = KvGetNum(kv, NULL_STRING, 100);
-				} else if (strcmp(value, "helmet") == 0) {
+					}
+				} else if (StrEqual(value, "armor")) {
+					g_BotArmor = kv.GetNum(NULL_STRING, 100);
+				} else if (StrEqual(value, "helmet")) {
 					g_BotHelmets = KvGetYesOrNo(kv, NULL_STRING, true);
-				} else if (strcmp(value, "flashbangs") == 0) {
-					g_BotFlashes = KvGetNum(kv, NULL_STRING);
-				} else if (strcmp(value, "smokegrenade") == 0) {
+				} else if (StrEqual(value, "flashbangs")) {
+					g_BotFlashes = kv.GetNum(NULL_STRING);
+				} else if (StrEqual(value, "smokegrenade")) {
 					g_BotSmokes = KvGetYesOrNo(kv, NULL_STRING, false);
-				} else if (strcmp(value, "hegrenade") == 0) {
+				} else if (StrEqual(value, "hegrenade")) {
 					g_BotHEs = KvGetYesOrNo(kv, NULL_STRING, false);
-				} else if (strcmp(value, "defusekits") == 0) {
+				} else if (StrEqual(value, "defusekits")) {
 					g_BotDefuseKits = KvGetYesOrNo(kv, NULL_STRING, true);
-				} else if (strcmp(value, "health") == 0) {
-					g_BotHealthAmount = KvGetNum(kv, NULL_STRING, 100);
-				} else if (strcmp(value, "decoy") == 0) {
+				} else if (StrEqual(value, "health")) {
+					g_BotHealthAmount = kv.GetNum(NULL_STRING, 100);
+				} else if (StrEqual(value, "decoy")) {
 					g_BotDecoy = KvGetYesOrNo(kv, NULL_STRING, false);
-				} else if (strcmp(value, "taser") == 0) {
+				} else if (StrEqual(value, "taser")) {
 					g_BotTaser = KvGetYesOrNo(kv, NULL_STRING, true);
 				}
-			} while (KvGotoNextKey(kv, false));
-			KvGoBack(kv);
+			} while (kv.GotoNextKey(false));
+			kv.GoBack();
 		}
-		KvGoBack(kv);
+		kv.GoBack();
 	}
-	
+
 	/* Load secondary weapons */
-	if (KvJumpToKey(kv, "SecondaryMenu"))
+	if (kv.JumpToKey("SecondaryMenu"))
 	{
 		/* Clear out old list first */
 		g_SecondaryCount = 0;
-		
-		if (KvGotoFirstSubKey(kv, false))
+
+		if (kv.GotoFirstSubKey(false))
 		{
 			do
 			{
-				KvGetSectionName(kv, value, sizeof(value));
-				if (strcmp(value, "weapon") == 0)
+				kv.GetSectionName(value, sizeof(value));
+				if (StrEqual(value, "weapon"))
 				{
-					KvGetString(kv, NULL_STRING, value, sizeof(value));
-					new index = DM_GetWeaponID(value);
+					kv.GetString(NULL_STRING, value, sizeof(value));
+					int index = DM_GetWeaponID(value);
 					if (index != -1 && DM_GetWeaponType(index) == DmWeapon_Secondary)
 					{
 						g_SecondaryList[g_SecondaryCount++] = index;
 					}
 				}
-			} while (KvGotoNextKey(kv, false) && g_SecondaryCount < CSSDM_MAX_WEAPONS);
-			KvGoBack(kv);
+			} while (kv.GotoNextKey(false) && g_SecondaryCount < CSSDM_MAX_WEAPONS);
+			kv.GoBack();
 		}
-		KvGoBack(kv);
+		kv.GoBack();
 	}
-	
+
 	/* Load primary weapons */
-	if (KvJumpToKey(kv, "PrimaryMenu"))
+	if (kv.JumpToKey("PrimaryMenu"))
 	{
 		/* Clear out old list first */
 		g_PrimaryCount = 0;
-		
-		if (KvGotoFirstSubKey(kv, false))
+
+		if (kv.GotoFirstSubKey(false))
 		{
 			do
 			{
-				KvGetSectionName(kv, value, sizeof(value));
-				if (strcmp(value, "weapon") == 0)
+				kv.GetSectionName(value, sizeof(value));
+				if (StrEqual(value, "weapon"))
 				{
-					KvGetString(kv, NULL_STRING, value, sizeof(value));
-					new index = DM_GetWeaponID(value);
+					kv.GetString(NULL_STRING, value, sizeof(value));
+					int index = DM_GetWeaponID(value);
 					if (index != -1 && DM_GetWeaponType(index) == DmWeapon_Primary)
 					{
 						g_PrimaryList[g_PrimaryCount++] = index;
 					}
 				}
-			} while (KvGotoNextKey(kv, false) && g_PrimaryCount < CSSDM_MAX_WEAPONS);
-			KvGoBack(kv);
+			} while (kv.GotoNextKey(false) && g_PrimaryCount < CSSDM_MAX_WEAPONS);
+			kv.GoBack();
 		}
-		KvGoBack(kv);
+		kv.GoBack();
 	}
-	
-	CloseHandle(kv);
-	
+
+	delete kv;
+
 	/* Build the primary menu */
-	if (g_hPrimaryMenu != INVALID_HANDLE)
+	if (g_hPrimaryMenu != null)
 	{
-		CloseHandle(g_hPrimaryMenu);
+		delete g_hPrimaryMenu;
 	}
-	g_hPrimaryMenu = CreateMenu(Menu_PrimaryHandler, MenuAction_DrawItem|MenuAction_Display);
-	SetMenuTitle(g_hPrimaryMenu, "Primary weapon:");
-	for (new i=0; i<g_PrimaryCount; i++)
+	g_hPrimaryMenu = new Menu(Menu_PrimaryHandler, MenuAction_DrawItem|MenuAction_Display);
+	g_hPrimaryMenu.SetTitle("Primary weapon:");
+	for (int i=0; i<g_PrimaryCount; i++)
 	{
-		new index = g_PrimaryList[i];
+		int index = g_PrimaryList[i];
 		DM_GetWeaponName(index, value, sizeof(value));
-		AddMenuItem(g_hPrimaryMenu, "", value);
+		g_hPrimaryMenu.AddItem("", value);
 	}
-	AddMenuItem(g_hPrimaryMenu, "", "Random");
-	
+	g_hPrimaryMenu.AddItem("", "Random");
+
 	/* Build the secondary menu */
-	if (g_hSecondaryMenu != INVALID_HANDLE)
+	if (g_hSecondaryMenu != null)
 	{
-		CloseHandle(g_hSecondaryMenu);
+		delete g_hSecondaryMenu;
 	}
-	g_hSecondaryMenu = CreateMenu(Menu_SecondaryHandler, MenuAction_DrawItem|MenuAction_Display);
-	SetMenuTitle(g_hSecondaryMenu, "Secondary weapon:");
-	for (new i=0; i<g_SecondaryCount; i++)
+	g_hSecondaryMenu = new Menu(Menu_SecondaryHandler, MenuAction_DrawItem|MenuAction_Display);
+	g_hSecondaryMenu.SetTitle("Secondary weapon:");
+	for (int i=0; i<g_SecondaryCount; i++)
 	{
-		new index = g_SecondaryList[i];
+		int index = g_SecondaryList[i];
 		DM_GetWeaponName(index, value, sizeof(value));
-		AddMenuItem(g_hSecondaryMenu, "", value);
+		g_hSecondaryMenu.AddItem("", value);
 	}
-	AddMenuItem(g_hSecondaryMenu, "", "Random");
-	
+	g_hSecondaryMenu.AddItem("", "Random");
+
 	return true;
 }
 
-SetClientArmor(client, armor)
+void SetClientArmor(int client, int armor)
 {
 	SetEntProp(client, Prop_Send, "m_ArmorValue", armor);
 }
 
-SetClientHealth(client, health)
+void SetClientHealth(int client, int health)
 {
 	SetEntProp(client, Prop_Send, "m_iHealth", health);
 }
 
-GiveGrenades(client, flashnum, bool:he, bool:smoke, bool:decoy)
+void GiveGrenades(int client, int flashnum, bool he, bool smoke, bool decoy)
 {
 	if (!IsPlayerAlive(client))
 	{
@@ -919,7 +920,7 @@ GiveGrenades(client, flashnum, bool:he, bool:smoke, bool:decoy)
 	{
 		GivePlayerItem(client, "weapon_hegrenade");
 	}
-	for (new i=0; i<flashnum; i++)
+	for (int i=0; i<flashnum; i++)
 	{
 		GivePlayerItem(client, "weapon_flashbang");
 	}
@@ -933,11 +934,11 @@ GiveGrenades(client, flashnum, bool:he, bool:smoke, bool:decoy)
 	}
 }
 
-GiveNightVision(client)
+void GiveNightVision(int client)
 {
 	SetEntProp(client, Prop_Send, "m_bHasNightVision", true);
 }
-GiveHelmet(client)
+void GiveHelmet(int client)
 {
 	SetEntProp(client, Prop_Send, "m_bHasHelmet", true);
 }

@@ -13,7 +13,7 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
@@ -25,7 +25,7 @@
 #include <sourcemod>
 #include <cssdm>
 
-public Plugin:myinfo = 
+public Plugin myinfo =
 {
 	name = "CS:S DM Bot Quotas",
 	author = "AlliedModders LLC",
@@ -35,74 +35,73 @@ public Plugin:myinfo =
 }
 
 /* CS:S ConVars */
-new Handle:BotQuota = INVALID_HANDLE
+ConVar BotQuota;
 
 /* Our ConVars */
-new Handle:BalanceAmt = INVALID_HANDLE
+ConVar BalanceAmt;
 
-public OnPluginStart()
+public void OnPluginStart()
 {
 	/* Find CS:S ConVars */
-	BotQuota = FindConVar("bot_quota")
-	
+	BotQuota = FindConVar("bot_quota");
+
 	/* Create our ConVars */
-	BalanceAmt = CreateConVar("cssdm_bots_balance", "0", "Minimum number of players (bot_quota)")
-	HookConVarChange(BalanceAmt, OnBalanceChange)
+	BalanceAmt = CreateConVar("cssdm_bots_balance", "0", "Minimum number of players (bot_quota)");
+	BalanceAmt.AddChangeHook(OnBalanceChange);
 }
 
-public OnMapStart()
+public void OnMapStart()
 {
-	BalanceBots(GetConVarInt(BalanceAmt));
+	BalanceBots(BalanceAmt.IntValue);
 }
 
-public OnBalanceChange(Handle:convar, const String:oldval[], const String:newval[])
+public void OnBalanceChange(ConVar convar, const char[] oldval, const char[] newval)
 {
-	BalanceBots(StringToInt(newval))
+	BalanceBots(StringToInt(newval));
 }
 
-BalanceBots(quota)
+void BalanceBots(int quota)
 {
 	if (!quota)
 	{
 		return;
 	}
-	
-	new maxClients = GetMaxClients()
-	new humans, bots
-	
+
+	int humans, bots;
+
 	/* Get the number of valid humans and bots */
-	for (new i=1; i<=maxClients; i++)
+	for (int i=1; i<=MaxClients; i++)
 	{
 		if (!IsClientInGame(i))
 		{
-			continue
+			continue;
 		}
 		if (!IsFakeClient(i))
 		{
-			humans++
+			humans++;
 		} else {
-			bots++
+			bots++;
 		}
 	}
-	
+
 	/* Get the number of bots needed to fill quota */
 	if (quota < humans)
 	{
-		quota = 0
+		quota = 0;
 	} else {
-		quota -= humans
+		quota -= humans;
 	}
-	
+
 	/* Now, set the new value */
-	SetConVarInt(BotQuota, quota)
+	BotQuota.IntValue = quota;
 }
 
-public OnClientPutInServer(client)
+public void OnClientPutInServer(int client)
 {
-	BalanceBots(GetConVarInt(BalanceAmt))
+	BalanceBots(BalanceAmt.IntValue);
 }
 
-public OnClientDisconnect_Post(client)
+public void OnClientDisconnect_Post(int client)
 {
-	BalanceBots(GetConVarInt(BalanceAmt))
+	BalanceBots(BalanceAmt.IntValue);
 }

@@ -13,7 +13,7 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
@@ -27,21 +27,21 @@
 #include <cssdm>
 
 /* Plugin stuff */
-new Handle:cssdm_respawn_command;
-new Handle:cssdm_force_mapchanges;
-new Handle:cssdm_mapchange_file;
-new Handle:cssdm_refill_ammo;
-new Handle:mp_timelimit;
-new Handle:g_ChangeMapTimer = INVALID_HANDLE;
-new bool:g_AmmoHooks = false;
-new g_ActiveWepOffs = -1;
+ConVar cssdm_respawn_command;
+ConVar cssdm_force_mapchanges;
+ConVar cssdm_mapchange_file;
+ConVar cssdm_refill_ammo;
+ConVar mp_timelimit;
+Handle g_ChangeMapTimer = INVALID_HANDLE;
+bool g_AmmoHooks = false;
+int g_ActiveWepOffs = -1;
 
 /* Player stuff */
-new Float:g_DeathTimes[MAXPLAYERS+1];
-new bool:g_bHasNoAmmoInClip1[MAXPLAYERS+1] = {false,...};
+float g_DeathTimes[MAXPLAYERS+1];
+bool g_bHasNoAmmoInClip1[MAXPLAYERS+1] = {false,...};
 
 /** PUBLIC INFO */
-public Plugin:myinfo = 
+public Plugin myinfo =
 {
 	name = "CS:S DM Basics",
 	author = "AlliedModders LLC",
@@ -50,31 +50,31 @@ public Plugin:myinfo =
 	url = "http://www.bailopan.net/cssdm/"
 };
 
-public OnPluginStart()
+public void OnPluginStart()
 {
 	LoadTranslations("cssdm.phrases");
-	
+
 	RegConsoleCmd("say", Command_Say);
 	RegConsoleCmd("say_team", Command_Say);
-	
+
 	cssdm_respawn_command = CreateConVar("cssdm_respawn_command", "1", "Sets whether clients can manually respawn");
 	cssdm_force_mapchanges = CreateConVar("cssdm_force_mapchanges", "0", "Sets whether CS:S DM should force mapchanges");
 	cssdm_mapchange_file = CreateConVar("cssdm_mapchange_file", "mapcycle.txt", "Sets the mapchange file for CS:S DM");
 	cssdm_refill_ammo = CreateConVar("cssdm_refill_ammo", "1", "Sets whether CS:S DM automatically refills ammo");
 	mp_timelimit = FindConVar("mp_timelimit");
-	
-	HookConVarChange(cssdm_force_mapchanges, CvarChange_RestartMapTimer);
-	HookConVarChange(mp_timelimit, CvarChange_RestartMapTimer);	
-	HookConVarChange(cssdm_refill_ammo, CvarChange_RefillAmmo);
-	
-	g_ActiveWepOffs = FindSendPropOffs("CCSPlayer", "m_hActiveWeapon");
+
+	cssdm_force_mapchanges.AddChangeHook(CvarChange_RestartMapTimer);
+	mp_timelimit.AddChangeHook(CvarChange_RestartMapTimer);
+	cssdm_refill_ammo.AddChangeHook(CvarChange_RefillAmmo);
+
+	g_ActiveWepOffs = FindSendPropInfo("CCSPlayer", "m_hActiveWeapon");
 }
 
-public DM_OnStartup()
+public void DM_OnStartup()
 {
 	RestartMapTimer();
-	
-	g_AmmoHooks = GetConVarInt(cssdm_refill_ammo) ? true : false;
+
+	g_AmmoHooks = cssdm_refill_ammo.BoolValue;
 	if (g_AmmoHooks && g_ActiveWepOffs > 0)
 	{
 		HookEvent("weapon_reload", Event_CheckDepleted);
@@ -82,17 +82,17 @@ public DM_OnStartup()
 	}
 }
 
-public DM_OnShutdown()
+public void DM_OnShutdown()
 {
 	if (g_ChangeMapTimer != INVALID_HANDLE)
 	{
-		CloseHandle(g_ChangeMapTimer);
+		delete g_ChangeMapTimer;
 		g_ChangeMapTimer = INVALID_HANDLE;
 	}
 	ShutdownAmmoHooks();
 }
 
-ShutdownAmmoHooks()
+void ShutdownAmmoHooks()
 {
 	if (g_AmmoHooks)
 	{
@@ -102,81 +102,81 @@ ShutdownAmmoHooks()
 	}
 }
 
-public CvarChange_RefillAmmo(Handle:cvar, const String:oldvalue[], const String:newvalue[])
+public void CvarChange_RefillAmmo(ConVar cvar, const char[] oldvalue, const char[] newvalue)
 {
-	if (GetConVarInt(cvar) && !g_AmmoHooks && g_ActiveWepOffs > 0)
+	if (cvar.BoolValue && !g_AmmoHooks && g_ActiveWepOffs > 0)
 	{
 		HookEvent("weapon_reload", Event_CheckDepleted);
 		HookEvent("weapon_fire_on_empty", Event_CheckDepleted);
-	} else if (!GetConVarInt(cvar) && g_AmmoHooks) {
+	} else if (!cvar.BoolValue && g_AmmoHooks) {
 		UnhookEvent("weapon_reload", Event_CheckDepleted);
 		UnhookEvent("weapon_fire_on_empty", Event_CheckDepleted);
 	}
 }
 
-public Event_CheckDepleted(Handle:event, const String:name[], bool:dontBroadcast)
+public void Event_CheckDepleted(Event event, const char[] name, bool dontBroadcast)
 {
-	new client = GetClientOfUserId(GetEventInt(event, "userid"));
+	int client = GetClientOfUserId(GetEventInt(event, "userid"));
 	if (!client || !IsClientInGame(client))
 	{
 		return;
 	}
-	
-	new entity = GetEntDataEnt2(client, g_ActiveWepOffs);
+
+	int entity = GetEntDataEnt2(client, g_ActiveWepOffs);
 	if (entity < 1)
 	{
 		return;
 	}
-	
-	new ammoType = GetEntProp(entity, Prop_Send, "m_iPrimaryAmmoType");
-	
+
+	int ammoType = GetEntProp(entity, Prop_Send, "m_iPrimaryAmmoType");
+
 	/* Give something reasonable -- the game will chop it off */
 	DM_GiveClientAmmo(client, ammoType, 200, false);
 }
 
-public CvarChange_RestartMapTimer(Handle:cvar, const String:oldvalue[], const String:newvalue[])
+public void CvarChange_RestartMapTimer(ConVar cvar, const char[] oldvalue, const char[] newvalue)
 {
 	RestartMapTimer();
 }
 
-RestartMapTimer()
+void RestartMapTimer()
 {
 	if (g_ChangeMapTimer != INVALID_HANDLE)
 	{
-		CloseHandle(g_ChangeMapTimer);
+		delete g_ChangeMapTimer;
 		g_ChangeMapTimer = INVALID_HANDLE;
 	}
-	
-	if (GetConVarInt(cssdm_force_mapchanges))
+
+	if (cssdm_force_mapchanges.BoolValue)
 	{
 		/* Find how much time is left in the map */
-		new Float:seconds = (GetConVarInt(mp_timelimit) * 60.0) - GetGameTime();
+		float seconds = (mp_timelimit.IntValue * 60.0) - GetGameTime();
 		g_ChangeMapTimer = CreateTimer(seconds, Timer_ChangeMap);
 	}
 }
 
-public Action:Timer_ChangeMap(Handle:timer)
+public Action Timer_ChangeMap(Handle timer)
 {
 	g_ChangeMapTimer = INVALID_HANDLE;
-	
-	decl String:changefile[64];
-	GetConVarString(cssdm_mapchange_file, changefile, sizeof(changefile));
-	
-	new Handle:file = OpenFile(changefile, "rt");
+
+	char changefile[64];
+	cssdm_mapchange_file.GetString(changefile, sizeof(changefile));
+
+	File file = OpenFile(changefile, "rt");
 	if (!file)
 	{
 		LogError("[CSSDM] Could not open mapchange file \"%s\"", changefile);
 		return Plugin_Stop;
 	}
-	
-	decl String:curmap[64];
+
+	char curmap[64];
 	GetCurrentMap(curmap, sizeof(curmap));
-	
-	new String:firstmap[64];
-	new String:lastmap[64];
-	decl String:buffer[64];
-	new bool:matched = false;
-	while (!IsEndOfFile(file) && ReadFileLine(file, buffer, sizeof(buffer)))
+
+	char firstmap[64];
+	char lastmap[64];
+	char buffer[64];
+	bool matched = false;
+	while (!file.EndOfFile() && file.ReadLine(buffer, sizeof(buffer)))
 	{
 		TrimString(buffer);
 		if (buffer[0] == '\0' || (!IsCharAlpha(buffer[0]) && !IsCharNumeric(buffer[0])))
@@ -199,112 +199,113 @@ public Action:Timer_ChangeMap(Handle:timer)
 			break;
 		}
 	}
-	CloseHandle(file);
-	
-	if (!matched || (strcmp(buffer, curmap) == 0))
+	delete file;
+
+	if (!matched || StrEqual(buffer, curmap))
 	{
 		strcopy(lastmap, sizeof(lastmap), firstmap);
 	}
-	
+
 	if (lastmap[0] != '\0')
 	{
 		ServerCommand("changelevel %s", lastmap);
 	}
-	
+
 	return Plugin_Stop;
 }
 
-public Action:Timer_Welcome(Handle:timer, any:userid)
+public Action Timer_Welcome(Handle timer, int userid)
 {
-	new client = GetClientOfUserId(userid);
-	
+	int client = GetClientOfUserId(userid);
+
 	if (!client || !IsClientInGame(client))
 	{
 		return Plugin_Stop;
 	}
-	
+
 	PrintToChat(client, "[CSSDM] Counter-Strike Source: Deathmatch (version %s)", CSSDM_VERSION);
 	PrintToChat(client, "[CSSDM] Visit http://www.bailopan.net/cssdm to download.");
-	
+
 	return Plugin_Stop;
 }
 
-public OnClientPutInServer(client)
+public void OnClientPutInServer(int client)
 {
 	g_DeathTimes[client] = 0.0;
 	CreateTimer(10.0, Timer_Welcome, GetClientUserId(client));
-	
+
 	g_bHasNoAmmoInClip1[client] = false;
 }
 
-public Action:DM_OnClientDeath(client)
+public Action DM_OnClientDeath(int client)
 {
 	g_DeathTimes[client] = GetGameTime();
 	return Plugin_Continue;
 }
 
-public Action:Command_Say(client, args)
+public Action Command_Say(int client, int args)
 {
-	if (!DM_IsRunning() || !GetConVarInt(cssdm_respawn_command))
+	if (!DM_IsRunning() || !cssdm_respawn_command.BoolValue)
 	{
 		return Plugin_Continue;
 	}
-	
-	decl String:command[32];
+
+	char command[32];
 	GetCmdArg(1, command, sizeof(command));
-	
-	if (strcmp(command, "respawn") == 0)
+
+	if (StrEqual(command, "respawn"))
 	{
 		if (!IsClientInGame(client))
 		{
 			PrintToChat(client, "[CSSDM] %t", "NoRespawn NotInGame");
 			return Plugin_Handled;
 		}
-		
+
 		if (DM_IsClientAlive(client))
 		{
 			PrintToChat(client, "[CSSDM] %t", "NoRespawn Alive");
 			return Plugin_Handled;
 		}
-		
-		new team = GetClientTeam(client);
+
+		int team = GetClientTeam(client);
 		if (team != CSSDM_TEAM_T && team != CSSDM_TEAM_CT)
 		{
 			PrintToChat(client, "[CSSDM] %t", "NoRespawn Team");
 			return Plugin_Handled;
 		}
-		
-		new Float:elapsed = GetGameTime() - g_DeathTimes[client];
-		new Float:wait_time = DM_GetSpawnWaitTime();
+
+		float elapsed = GetGameTime() - g_DeathTimes[client];
+		float wait_time = DM_GetSpawnWaitTime();
 		if (elapsed < wait_time)
 		{
 			PrintToChat(client, "[CSSDM] %t", "NoRespawn Wait", wait_time - elapsed);
 			return Plugin_Handled;
 		}
-		
+
 		/* We passed the tests... respawn! */
 		DM_RespawnClient(client);
-		
+
 		return Plugin_Handled;
 	}
-	
+
 	return Plugin_Continue;
 }
 
-public Action:OnPlayerRunCmd(client, &buttons, &impulse, Float:vel[3], Float:angles[3], &weapon)
+public Action OnPlayerRunCmd(int client, int& buttons, int& impulse, float vel[3], float angles[3], int& weapon,
+	int& subtype, int& cmdnum, int& tickcount, int& seed, int mouse[2])
 {
     if(!g_AmmoHooks)
         return Plugin_Continue;
-    
-    new entity = GetEntDataEnt2(client, g_ActiveWepOffs);
+
+    int entity = GetEntDataEnt2(client, g_ActiveWepOffs);
     if (entity < 1)
     {
         g_bHasNoAmmoInClip1[client] = false;
         return Plugin_Continue;
     }
-    
+
     // He's out of ammo -> reloading
-    new iClip1 = GetEntProp(entity, Prop_Send, "m_iClip1");
+    int iClip1 = GetEntProp(entity, Prop_Send, "m_iClip1");
     if(iClip1 == 0)
     {
         g_bHasNoAmmoInClip1[client] = true;
@@ -313,17 +314,17 @@ public Action:OnPlayerRunCmd(client, &buttons, &impulse, Float:vel[3], Float:ang
     else if(g_bHasNoAmmoInClip1[client])
     {
         g_bHasNoAmmoInClip1[client] = false;
-        
-        new ammoType = GetEntProp(entity, Prop_Send, "m_iPrimaryAmmoType");
-        
+
+        int ammoType = GetEntProp(entity, Prop_Send, "m_iPrimaryAmmoType");
+
         if(ammoType <= 0)
         {
             return Plugin_Continue;
         }
-        
+
         // Give some ammo.
         DM_GiveClientAmmo(client, ammoType, 200, false);
     }
-    
+
     return Plugin_Continue;
 }

@@ -81,13 +81,13 @@
 			}
 			"TakeDmgPatch1"
 			{
-				"windows"		"607"
-				"linux"			"5934"
+				"windows"		"714"
+				"linux"			"1244"
 			}
 			"TakeDmgPatch2"
 			{
-				"windows"		"4994"
-				"linux"			"6776"
+				"windows"		"870"
+				"linux"			"6800"
 			}
 			/* Offset into gamerules constructor - bogo value linux/mac */
 			// Set mac to 0 and linux to 1 always for OS identification with extension compat plugin
@@ -100,23 +100,23 @@
 			/* Virtual indexes */
 			"IPointsForKill"
 			{
-				"windows"		"81"
-				"linux"			"82"
+				"windows"		"82"
+				"linux"			"83"
 			}
 			"Weapon_GetSlot"
 			{
-				"windows"		"289"
-				"linux"			"290"
+				"windows"		"292"
+				"linux"			"293"
 			}
 			"RemoveAllItems"
 			{
-				"windows"		"385"
-				"linux"			"386"
+				"windows"		"388"
+				"linux"			"389"
 			}
 			"GiveAmmo"
 			{
-				"windows"		"275"
-				"linux"			"276"
+				"windows"		"278"
+				"linux"			"279"
 			}
 			/* Next _two_ are detour byte "save" counts */
 			"DropWeaponsPatch"
@@ -148,11 +148,12 @@
 				"windows"		"\x55\x8B\xEC\x8B\x45\x2A\x85\xC0\x74\x2A\x83\xC0\x2A\x50"
 				"linux"			"@_Z11UTIL_RemoveP11CBaseEntity"
 			}
+			// win fcn.1043a0c0 12/25
 			"RoundRespawn"
 			{
 				"library"		"server"
-				"windows"		"\x55\x8B\xEC\x83\xEC\x0C\x53\x56\x8B\xF1\x8B\x0D\x2A\x2A\x2A\x2A\x57\x8B\x01"
-				"linux"			"\x55\x89\xE5\x57\x56\x53\x83\xEC\x4C\xA1\x2A\x2A\x2A\x2A\x8B\x5D\x08\x89\x04\x24"
+				"windows"		"\x55\x8b\xec\x83\xec\x0c\x53\x56\x57\x8b\xf9\x8b\x0d\x2a\x2a\x2a\x2a\x8B\x01"
+				"linux"			"\x55\x89\xE5\x57\x56\x53\x83\xEC\x4C\xA1\x2A\x2A\x2A\x2A\x8B\x5D\x08\x89\x04\x24\xE8\x2A\x2A\x2A\x2A\x84\xC0\x0F\x85"
 			}
 			"OnTakeDamage"
 			{
@@ -176,14 +177,15 @@
 			"CSWeaponDrop"
 			{
 				"library"		"server"
-				"windows"		"\x2A\x2A\x2A\x2A\x2A\x2A\x81\xEC\x2A\x2A\x2A\x2A\x53\x8B\x5D\x08\x56\x57\x6A\x00\x68"
-				"linux"			"\x2A\x2A\x2A\x2A\x2A\x2A\x56\x53\x81\xEC\x7C\x02\x00\x00\x8B\x5D\x0C\x8B\x75\x08\x85\xDB\x74\x2A\xC7\x44\x24\x2A\x2A\x2A\x2A\x00"
+				"windows"		"\x2A\x2A\x2A\x2A\x2A\x2A\x83\xE4\xF8\x83\xC4\x04\x55\x8B\x6B\x04\x89\x6C\x24\x04\x8B\xEC\x83\xEC\x34\x56"
+				"linux"			"\x2A\x2A\x2A\x2A\x2A\x2A\xEC\x70\x8B\x5D\x08\x0F\xB6\x75\x10"
 			}
+			// win fcn.104485d0 12/25
 			"DropWeapons"
 			{
 				"library"		"server"
-				"windows"		"\x55\x8B\xEC\x83\xE4\xF8\x83\xEC\x2A\x53\x56\x8B\xF1\x57\x6A\x00\x68\x2A\x2A\x2A\x2A\x8B\x06"		
-				"linux"			"\x55\x89\xE5\x57\x56\x53\x83\xEC\x7C\x8B\x7D\x08\x0F\xB6\x4D\x10"
+				"windows"		"\x55\x8b\xec\x83\xe4\xf0\x81\xec\x88\x02\x00\x00\x83\x3d\x2a\x2a\x2a\x2a\x00"
+				"linux"			"\x55\x89\xe5\x57\x56\x53\x81\xec\x2a\x2a\x2a\x2a\x0f\xb6\x45\x0c\x0f\xb6\x55\x10"
 			}
 			"CalcDominationAndRevenge"
 			{
@@ -204,24 +206,14 @@
 		/* FFA patch bytes */
 		"Keys"
 		{
-			"LagCompPatch_Windows"		"\xEB"
+			"LagCompPatch_Windows"		"\x90\x90\x90\x90\x90\x90"
 			"LagCompPatch_Linux"		"\x90\x90\x90\x90\x90\x90"
-			"LagCompPatch_Mac"			"\x90\x90\x90\x90\x90\x90"
 			
 			"TakeDmgPatch1_Windows"		"\xEB"
-			"TakeDmgPatch1_Linux"		"\x90\x90\x90\x90\x90\x90"
-			"TakeDmgPatch1_Mac"			"\x90\x90\x90\x90\x90\x90"
-			
-			"TakeDmgPatch2_Windows"		"\xEB"
-			"TakeDmgPatch2_Linux"		"\x90\x90\x90\x90\x90\x90"
-			"TakeDmgPatch2_Mac"			"\x90\x90\x90\x90\x90\x90"
+			"TakeDmgPatch1_Linux"		"\xEB"
 			
 			"CalcDomRevPatch_Windows"	"\x90\x90\x90\x90\x90\x90"
-			"CalcDomRevPatch_Linux"		"\x90\x90"
-			"CalcDomRevPatch_Mac"		"\x90\x90\x90\x90\x90\x90"
-			
-			"IPointsForKillPatch_Windows"	"\xEB"
-			"IPointsForKillPatch_Linux"	"\xEB"
+			"CalcDomRevPatch_Linux"		"\x90\x90\x90\x90\x90\x90"
 		}
 		"Offsets"
 		{
@@ -229,20 +221,12 @@
 			"LagCompPatch"
 			{
 				"windows"		"46"
-				"linux"			"31"
-				"mac"			"32"
+				"linux"			"25"
 			}
 			"TakeDmgPatch1"
 			{
-				"windows"		"828"
-				"linux"			"564"
-				"mac"			"746"
-			}
-			"TakeDmgPatch2"
-			{
-				"windows"		"828"
-				"linux"			"564"
-				"mac"			"746"
+				"windows"		"844"
+				"linux"			"504"
 			}
 			/* Offset into gamerules constructor - bogo value linux/mac */
 			// Set mac to 0 and linux to 1 always for OS identification with extension compat plugin
@@ -250,51 +234,43 @@
 			{
 				"windows"		"32"
 				"linux"			"1"
-				"mac"			"0"
 			}
 			/* Virtual indexes */
 			"IPointsForKill"
 			{
 				"windows"		"80"
 				"linux"			"81"
-				"mac"			"81"
 			}
 			"Weapon_GetSlot"
 			{
-				"windows"		"268"
-				"linux"			"269"
-				"mac"			"269"
+				"windows"		"274"
+				"linux"			"275"
 			}
 			"RemoveAllItems"
 			{
-				"windows"		"342"
-				"linux"			"343"
-				"mac"			"343"
+				"windows"		"348"
+				"linux"			"349"
 			}
 			"GiveAmmo"
 			{
-				"windows"		"252"
-				"linux"			"253"
-				"mac"			"253"
+				"windows"		"258"
+				"linux"			"259"
 			}
 			/* Next _two_ are detour byte "save" counts */
 			"DropWeaponsPatch"
 			{
 				"windows"		"6"
 				"linux"			"6"
-				"mac"			"6"
 			}
 			"CSWeaponDropPatch"
 			{
 				"windows"		"9"
 				"linux"			"6"
-				"mac"			"6"
 			}
 			"CalcDomRevPatch"
 			{
 				"windows"		"65"
-				"linux"			"96"
-				"mac"			"86"
+				"linux"			"72"
 			}
 			"IPointsForKillPatch" // Patch IPointsForKill to always return 1
 			{
@@ -307,58 +283,50 @@
 			"UTIL_Remove"
 			{
 				"library"		"server"
-				"windows"		"\x55\x8B\xEC\x56\x57\x8B\x7D\x08\x8B\xF1\x57\xE8\x2A\x2A\x2A\x2A\x8B\x0D\x2A\x2A\x2A\x2A\x57\x56"
+				"windows"		"\x55\x8B\xEC\x56\x8B\x75\x08\x85\xF6\x74\x2A\x83\xC6\x0C"
 				"linux"			"@_Z11UTIL_RemoveP11CBaseEntity"
-				"mac"			"@_Z11UTIL_RemoveP11CBaseEntity"
 			}
 			"RoundRespawn"
 			{
 				"library"	"server"
-				"windows"	"\x55\x8B\xEC\x51\x89\x2A\x2A\x8B\x2A\x2A\x8B\x10\x8B"
+				"windows"	"\x55\x8B\xEC\x51\x89\x4D\xFC\x8B\x45\xFC\x8B\x10"
 				"linux"		"@_ZN9CCSPlayer12RoundRespawnEv"
-				"mac"		"@_ZN9CCSPlayer12RoundRespawnEv"
 			}
 			"OnTakeDamage"
 			{
 				"library"		"server"
-				"windows"		"\x55\x8B\xEC\x81\xEC\x2A\x2A\x2A\x2A\x56\x89\x4D\xFC\x8B\x45\x2A\x50\x8D\x8D\x2A\x2A\x2A\x2A\xE8"
+				"windows"		"\x55\x8B\xEC\x81\xEC\x40\x01\x00\x00\x56\x89\x4D\xFC"
 				"linux"			"@_ZN9CCSPlayer12OnTakeDamageERK15CTakeDamageInfo"
-				"mac"			"@_ZN9CCSPlayer12OnTakeDamageERK15CTakeDamageInfo"
 			}
 			"WantsLagComp"
 			{
 				"library"		"server"
-				"windows"		"\x55\x8B\xEC\x83\xEC\x10\xA1\x2A\x2A\x2A\x2A\x56\x8B\xF1\x57"
+				"windows"		"\x55\x8B\xEC\x83\xEC\x10\xA1\x2A\x2A\x2A\x2A\x56"
 				"linux"			"@_ZNK11CBasePlayer28WantsLagCompensationOnEntityEPKS_PK8CUserCmdPK7CBitVecILi2048EE"
-				"mac"			"@_ZNK11CBasePlayer28WantsLagCompensationOnEntityEPKS_PK8CUserCmdPK7CBitVecILi2048EE"
 			}
 			"CGameRules"
 			{
 				"library"		"server"
-				"windows"		"\x55\x8B\xEC\x8B\x0D\x2A\x2A\x2A\x2A\x85\xC9\x74\x07"
+				"windows"		"\x55\x8B\xEC\x8B\x0D\x2A\x2A\x2A\x2A\x85\xC9\x74\x2A\x8B\x01\x6A\x01"
 				"linux"			"@g_pGameRules"
-				"mac"			"@g_pGameRules"
 			}
 			"CSWeaponDrop"
 			{
 				"library"		"server"
-				"windows"		"\x2A\x2A\x2A\x2A\x2A\x2A\x01\x00\x00\x89\x4D\xFC\xC6\x45\x2A\x2A\x8B\x4D\x2A\xE8\x2A\x2A\x2A\x2A\x0F\xB6\xC0"
+				"windows"		"\x55\x8B\xEC\x81\xEC\x80\x01\x00\x00\x89\x4D\xFC"
 				"linux"			"@_ZN9CCSPlayer12CSWeaponDropEP17CBaseCombatWeaponbb"
-				"mac"			"@_ZN9CCSPlayer12CSWeaponDropEP17CBaseCombatWeaponbb"
 			}
 			"DropWeapons"
 			{
 				"library"		"server"
-				"windows"		"\x55\x8B\xEC\x83\xEC\x2A\x89\x4D\x2A\xC7\x45\x2A\x00\x00\x00\x00\xEB\x2A\x8B\x45\x2A\x83\xC0\x01\x89\x45\x2A\x83"
+				"windows"		"\x55\x8B\xEC\x83\xEC\x58\x89\x4D\xF8"
 				"linux"			"@_ZN9CCSPlayer11DropWeaponsEbb"
-				"mac"			"@_ZN9CCSPlayer11DropWeaponsEbb"
 			}
 			"CalcDominationAndRevenge"
 			{
 				"library"		"server"
-				"windows"		"\x55\x8B\xEC\x51\xA1\x2A\x2A\x2A\x2A\x89\x4D\xFC\x83\x78\x30\x00\x0F\x85\x2A\x2A\x2A\x2A\x57\x8B"
+				"windows"		"\x55\x8B\xEC\x51\xA1\x2A\x2A\x2A\x2A\x89\x4D\xFC"
 				"linux"			"@_ZN12CCSGameStats24CalcDominationAndRevengeEP9CCSPlayerS1_Pi"
-				"mac"			"@_ZN12CCSGameStats24CalcDominationAndRevengeEP9CCSPlayerS1_Pi"
 			}
 			"IPointsForKill"
 			{

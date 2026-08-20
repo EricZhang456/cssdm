@@ -38,13 +38,13 @@ enum DmWeaponType
  * Called when CS:S DM is started/enabled.  If CS:S DM is enabled,
  * this will get called at the start of every map.
  */
-forward DM_OnStartup();
+forward void DM_OnStartup();
 
 /**
  * Called when CS:S DM is disabled.  If CS:S DM is enabled, this 
  * will get called at the end of the map.
  */
-forward DM_OnShutdown();
+forward void DM_OnShutdown();
 
 /**
  * Called when a player spawns and CS:S DM is active.  This
@@ -53,7 +53,7 @@ forward DM_OnShutdown();
  * @param client		Client index.
  * @noreturn
  */
-forward DM_OnClientSpawned(client);
+forward void DM_OnClientSpawned(int client);
 
 /**
  * Called when a player spawns and CS:S DM is active.  This 
@@ -63,7 +63,7 @@ forward DM_OnClientSpawned(client);
  * @param client		Client index.
  * @noreturn
  */
-forward DM_OnClientPostSpawned(client);
+forward void DM_OnClientPostSpawned(int client);
 
 /**
  * Called when a player dies.
@@ -72,7 +72,7 @@ forward DM_OnClientPostSpawned(client);
  * @param client		Client index.
  * @return				Plugin_Handled to block player from respawning.
  */
-forward Action:DM_OnClientDeath(client);
+forward Action DM_OnClientDeath(int client);
 
 /**
  * Called when the cssdm_spawn_method cvar changes.
@@ -80,7 +80,7 @@ forward Action:DM_OnClientDeath(client);
  * @param method		Method name.
  * @return				Plugin_Stop to handle this method.
  */
-forward Action:DM_OnSetSpawnMethod(const String:method[]);
+forward Action DM_OnSetSpawnMethod(const char[] method);
 
 /**
  * Returns whether CS:S DM is running or not.  This should be used to 
@@ -88,7 +88,7 @@ forward Action:DM_OnSetSpawnMethod(const String:method[]);
  *
  * @return				True if CS:S DM is running, false otherwise.
  */
-native bool:DM_IsRunning();
+native bool DM_IsRunning();
 
 /**
  * Retrieves the CS:S DM spawning method.
@@ -97,7 +97,7 @@ native bool:DM_IsRunning();
  * @param maxlength		Maximum size of the method name buffer.
  * @noreturn
  */
-native DM_GetSpawnMethod(const String:method[], maxlength);
+native void DM_GetSpawnMethod(char[] method, int maxlength);
 
 /**
  * Provides lookup for a weapon by its short name.
@@ -105,7 +105,7 @@ native DM_GetSpawnMethod(const String:method[], maxlength);
  * @param name			Weapon short name (such as "usp").
  * @return				Weapon ID in CS:S DM, or -1 on failure.
  */
-native DM_GetWeaponID(const String:name[]);
+native int DM_GetWeaponID(const char[] name);
 
 /**
  * Gets the type of a weapon by index.
@@ -114,7 +114,7 @@ native DM_GetWeaponID(const String:name[]);
  * @return				Weapon type.
  * @error				Invalid weapon index.
  */
-native DmWeaponType:DM_GetWeaponType(index);
+native DmWeaponType DM_GetWeaponType(int index);
 
 /**
  * Retrieves the classname of a weapon. 
@@ -125,7 +125,7 @@ native DmWeaponType:DM_GetWeaponType(index);
  * @noreturn
  * @error				Invalid weapon index.
  */
-native DM_GetWeaponClassname(id, String:classname[], maxlength);
+native void DM_GetWeaponClassname(int id, char[] classname, int maxlength);
 
 /**
  * Retrieves the display name of a weapon. 
@@ -136,7 +136,7 @@ native DM_GetWeaponClassname(id, String:classname[], maxlength);
  * @noreturn
  * @error				Invalid weapon index.
  */
-native DM_GetWeaponName(id, String:name[], maxlength);
+native void DM_GetWeaponName(int id, char[] name, int maxlength);
 
 /**
  * Retrieves the entity index of a weapon in a player's weapon slot.
@@ -145,7 +145,7 @@ native DM_GetWeaponName(id, String:name[], maxlength);
  * @param type			Weapon slot type.
  * @return				Entity index, or -1 for none.
  */
-native DM_GetClientWeapon(client, DmWeaponType:type);
+native int DM_GetClientWeapon(int client, DmWeaponType type);
 
 /**
  * Drops a client's weapon.  CS:S DM removes dropped weapons from the world.
@@ -155,7 +155,7 @@ native DM_GetClientWeapon(client, DmWeaponType:type);
  * @noreturn
  * @error				Client index invalid or not in game; weapon entity invalid.
  */
-native DM_DropWeapon(client, entity);
+native void DM_DropWeapon(int client, int entity);
 
 /**
  * Strips all items from a bot, excluding their player suit.
@@ -164,14 +164,14 @@ native DM_DropWeapon(client, entity);
  * @noreturn
  * @error				Invalid client index, client not in game, nor client not a bot.
  */
-native DM_StripBotItems(client);
+native void DM_StripBotItems(int client);
 
 /**
  * Returns the spawn waiting time.
  *
  * @return				Spawn wait time, in seconds.
  */
-native Float:DM_GetSpawnWaitTime();
+native float DM_GetSpawnWaitTime();
 
 /**
  * Respawns a player using CS:S's low level respawning function.  This can be 
@@ -183,7 +183,7 @@ native Float:DM_GetSpawnWaitTime();
  * @noreturn
  * @error				Invalid client index or client not in game.
  */
-native DM_RespawnClient(client, bool:fullRespawn=true);
+native void DM_RespawnClient(int client, bool fullRespawn=true);
 
 /**
  * Returns whether or not a client is alive.
@@ -192,7 +192,7 @@ native DM_RespawnClient(client, bool:fullRespawn=true);
  * @return				True if alive, false if dead.
  * @error				Invalid client index or client not in game.
  */
-native DM_IsClientAlive(client);
+native bool DM_IsClientAlive(int client);
 
 /**
  * Gives ammo to a player.
@@ -204,16 +204,20 @@ native DM_IsClientAlive(client);
  * @return				Actual ammo amount given.
  * @error				Invalid client index or client not in game.
  */
-native DM_GiveClientAmmo(client, type, count, bool:noSound=false);
+native int DM_GiveClientAmmo(int client, int type, int count, bool noSound=false);
 
 /**
  * Returns if FFA is enabled and running
  *
  * @return				True if FFA is enabled otherwise false
  */
+<<<<<<< HEAD
 native DM_IsFFAEnabled();
 
 public SharedPlugin:__pl_cssdm = 
+=======
+public Extension __ext_cssdm = 
+>>>>>>> master
 {
 	name = "dm_extension_compat",
 	file = "dm_extension_compat.smx",
