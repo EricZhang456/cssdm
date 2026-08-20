@@ -1,0 +1,82 @@
+﻿"Phrases"
+{
+	"NoRespawn NotInGame"
+	{
+		"ua"		"Ви повинні бути в грі для відродження."
+	}
+
+	"NoRespawn Alive"
+	{
+		"ua"		"Ви повинні бути мертвими для відродження."
+	}
+
+	"NoRespawn Team"
+	{
+		"ua"		"Ви повинні бути в команді для відродження."
+	}
+
+	"NoRespawn Wait"
+	{
+		"ua"		"Зачекайте {1} секунд перш ніж відродитися."
+	}
+
+	"GunsMenuDisabled"
+	{
+		"ua"		"Меню зброї вимкнено."
+	}
+
+	"GunsMenuNotAvailable"
+	{
+		"ua"		"Меню зброї недоступне."
+	}
+
+	"GunsMenuAlreadyEnabled"
+	{
+		"ua"		"Меню зброї вже ввімкнено."
+	}
+
+	"GunsMenuReactivated"
+	{
+		"ua"		"Меню зброї буде ввімкнено при наступному відродженні."
+	}
+
+	"SayGunsNotify"
+	{
+		"ua"		"Напишіть 'guns' в чат, щоб ввімкнути меню."
+	}
+
+	"New weapons"
+	{
+		"ua"		"Нова зброя"
+	}
+
+	"Same weapons"
+	{
+		"ua"		"Одна і та ж зброя"
+	}
+
+	"Same weapons every time"
+	{
+		"ua"		"Одна і та ж зброя щоразу"
+	}
+
+	"Random weapons"
+	{
+		"ua"		"Випадкова зброя"
+	}
+
+	"Random weapons every time"
+	{
+		"ua"		"Випадкова зброя щоразу"
+	}
+
+	"Primary weapon"
+	{
+		"ua"		"Первинна зброя"
+	}
+
+	"Secondary weapon"
+	{
+		"ua"		"Вторинна зброя"
+	}
+}
