@@ -1,0 +1,47 @@
+﻿"Phrases"
+{
+	"NoRespawn NotInGame"
+	{
+		"fr"		"Vous devez etre dans le jeu pour faire un respawn."
+	}
+
+	"NoRespawn Alive"
+	{
+		"fr"		"Vous devez etre mort pour pouvoir faire un respawn."
+	}
+
+	"NoRespawn Team"
+	{
+		"fr"		"Vous devez etre dans une Team pour faire un respawn."
+	}
+
+	"NoRespawn Wait"
+	{
+		"fr"		"Vous devez attendre {1} secondes avant de reapparaitre."
+	}
+
+	"GunsMenuDisabled"
+	{
+		"fr"		"La commande guns est inactive."
+	}
+
+	"GunsMenuNotAvailable"
+	{
+		"fr"		"La commande guns n'est pas valable."
+	}
+
+	"GunsMenuAlreadyEnabled"
+	{
+		"fr"		"Votre menu est deja actif."
+	}
+
+	"GunsMenuReactivated"
+	{
+		"fr"		"Votre menu sera actif au prochain respawn."
+	}
+
+	"SayGunsNotify"
+	{
+		"fr"		"Dites 'guns' dans le T'chat pour ouvrir le menu."
+	}
+}
