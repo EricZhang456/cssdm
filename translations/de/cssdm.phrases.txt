@@ -1,0 +1,47 @@
+﻿"Phrases"
+{
+	"NoRespawn NotInGame"
+	{
+		"de"    	"Du mußt im Spiel sein um zu spawnen"
+	}
+
+	"NoRespawn Alive"
+	{
+		"de"    	"Du musst tot sein um zu respawnen"
+	}
+
+	"NoRespawn Team"
+	{
+		"de"    	"Du musst in einem Team sein um spawnen zu können"
+	}
+
+	"NoRespawn Wait"
+	{
+		"de"    	"Du musst noch {1} weitere Sekudnen abwarten bis du respawnen kannst"
+	}
+
+	"GunsMenuDisabled"
+	{
+		"de"    	"Der Waffen Menü Befehl ist abgeschaltet"
+	}
+
+	"GunsMenuNotAvailable"
+	{
+		"de"    	"Das Waffenmenü ist nicht verfügbar"
+	}
+
+	"GunsMenuAlreadyEnabled"
+	{
+		"de"    	"Dein Waffenmenü ist bereits eingeschaltet"
+	}
+
+	"GunsMenuReactivated"
+	{
+		"de"    	"Deine Waffen wurden für deinen nächsten Respawn freigeschaltet"
+	}
+
+	"SayGunsNotify"
+	{
+		"de"    	"Tippe 'guns' in den Chat um dein Menü wieder einzuschalten."
+	}
+}

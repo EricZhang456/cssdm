@@ -1,0 +1,47 @@
+﻿"Phrases"
+{
+	"NoRespawn NotInGame"
+	{
+		"tr"		"Yeniden dogmak için oyunda olmalisiniz."
+	}
+
+	"NoRespawn Alive"
+	{
+		"tr"		"Yeniden dogmak için ölü olmalisiniz."
+	}
+
+	"NoRespawn Team"
+	{
+		"tr"		"Yeniden dogmak için bir takimda olmalisiniz."
+	}
+
+	"NoRespawn Wait"
+	{
+		"tr"		"Yeniden dogmak için {1} saniye daha beklemelisiniz."
+	}
+
+	"GunsMenuDisabled"
+	{
+		"tr"		"Silahlar menüsü komutu etkin degil."
+	}
+
+	"GunsMenuNotAvailable"
+	{
+		"tr"		"Silahlar menüsü mevcut degil."
+	}
+
+	"GunsMenuAlreadyEnabled"
+	{
+		"tr"		"Silahlar menünüz zaten etkin."
+	}
+
+	"GunsMenuReactivated"
+	{
+		"tr"		"Silahlar menünüz yeniden dogusunuz için etkinlestirildi."
+	}
+
+	"SayGunsNotify"
+	{
+		"tr"		"Menünüzü yeniden etkinlestirmek için 'guns' yazin."
+	}
+}
