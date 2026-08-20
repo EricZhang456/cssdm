@@ -1,9 +1,8 @@
 #include <sourcemod>
 #include <cssdm>
 
-new Engine:iEngine = Engine_Unknown;
-public APLRes:AskPluginLoad2(Handle:my
-self, bool:late, String:error[], err_max)
+Engine iEngine = Engine_Unknown;
+public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
 {
 	iEngine = GetEngineVersion();
 	
@@ -14,33 +13,33 @@ self, bool:late, String:error[], err_max)
 	}
 	return APLRes_Success;
 }
-public OnPluginStart()
+public void OnPluginStart()
 {
 	if(iEngine == Engine_CSS) //Only care about CS:S for this
 	{
 		HookEvent("player_blind", Event_PlayerBlind, EventHookMode_Post);
 	}
 }
-public Event_PlayerBlind(Handle:event, const String:name[], bool:dontBroadcast)
+public Event_PlayerBlind(Event event, const char[] name, bool dontBroadcast)
 {
 	if(!DM_IsFFAEnabled())
 		return;
 
-	new userid = GetEventInt(event, "userid");
-	new client = GetClientOfUserId(userid);
+	int userid = event.GetInt("userid");
+	int client = GetClientOfUserId(userid);
 	
 	if(IsValidClient(client))
 	{
-		new Float:fDuration = GetEntPropFloat(client, Prop_Send, "m_flFlashDuration");
+		float fDuration = GetEntPropFloat(client, Prop_Send, "m_flFlashDuration");
 		CreateTimer(fDuration, Timer_FlashEnd, userid, TIMER_FLAG_NO_MAPCHANGE);
 	}
 }
-public Action:Timer_FlashEnd(Handle:timer, any:userid)
+public Action Timer_FlashEnd(Handle timer, int userid)
 {
 	if(!DM_IsFFAEnabled())
 		return;
 
-	new client = GetClientOfUserId(userid);
+	int client = GetClientOfUserId(userid);
 	
 	if(IsValidCLient(client))
 	{
@@ -49,13 +48,13 @@ public Action:Timer_FlashEnd(Handle:timer, any:userid)
 		
 	return Plugin_Stop;
 }
-public DM_OnClientPostSpawned(client)
+public void DM_OnClientPostSpawned(int client)
 {
 	//DM checks everything already just hide it
 	HideRadar(client);
 }
 //Private functions
-HideRadar(client)
+void HideRadar(int client)
 {
 	if(!DM_IsFFAEnabled())
 		return;
@@ -71,7 +70,7 @@ HideRadar(client)
 		SetEntPropFloat(client, Prop_Send, "m_flFlashMaxAlpha", 0.5);
 	}
 }
-IsValidClient(client)
+bool IsValidClient(int client)
 {
 	if(client >= 1 && client <= MaxClients && IsClientInGame(client) && GetClientTeam(client) > 1)
 		return true;

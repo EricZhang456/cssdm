@@ -5,54 +5,52 @@
 #include <cssdm>
 
 //Engine Version/Native stuff
-new EngineVersion:iEngine = Engine_Unknown;
+EngineVersion iEngine = Engine_Unknown;
 //new bool:bGiveAmmoNative = false; //Enable when we compile against 1.6
 
 //Forwards
-new Handle:hOnStartup;
-new Handle:hOnShutdown;
-new Handle:hOnClientSpawned;
-new Handle:hOnClientSpawnedPost;
-new Handle:hOnClientDeath;
-new Handle:hOnSetSpawnMethod;
+GlobalForward hOnStartup;
+GlobalForward hOnShutdown;
+GlobalForward hOnClientSpawned;
+GlobalForward hOnClientSpawnedPost;
+GlobalForward hOnClientDeath;
+GlobalForward hOnSetSpawnMethod;
 
 //CVars
-new Handle:hRagdollTime;
-new Handle:hRespawnWait;
-new Handle:hAllowC4;
-new Handle:hEnabled;
-new Handle:hFFAEnabled;
-new Handle:hSpawnMethod;
-new Handle:hRemoveDrops;
+ConVar hVersion;
+ConVar hRagdollTime;
+ConVar hRespawnWait;
+ConVar hAllowC4;
+ConVar hEnabled;
+ConVar hFFAEnabled;
+ConVar hSpawnMethod;
+ConVar hRemoveDrops;
 
 //Cvar values
-new iRagdollTime;
-new Float:fRespawnTime;
-new bool:bAllowC4;
-new bool:bRemoveDropped;
+bool bAllowC4;
 
 //Bools
-new bool:bIsRunning = false;
-new bool:bFFAEnabled = false;
-new bool:bConfigRan = false;
-new bool:bInRoundRestart = false;
-new bool:bAllowFFA = false;
+bool bIsRunning = false;
+bool bFFAEnabled = false;
+bool bConfigRan = false;
+bool bInRoundRestart = false;
+bool bAllowFFA = false;
 
 //Weapon Info
-new iMaxWeapons;
-new String:szWeaponNames[CSSDM_MAX_WEAPONS][64];
-new String:szClassnames[CSSDM_MAX_WEAPONS][64];
-new Handle:hWeaponIDTrie;
-new DmWeaponType:iWeaponType[CSSDM_MAX_WEAPONS];
+int iMaxWeapons;
+char szWeaponNames[CSSDM_MAX_WEAPONS][64];
+char szClassnames[CSSDM_MAX_WEAPONS][64];
+StringMap hWeaponIDTrie;
+DmWeaponType iWeaponType[CSSDM_MAX_WEAPONS];
 
 //Timers
-new Handle:hRespawnTimers[MAXPLAYERS+1];
+Handle hRespawnTimers[MAXPLAYERS+1];
 
 //Gameconf
-new Handle:hGameConf;
+GameData hGameConf;
 
 //Bomb entity
-new iBombEnt = -1;
+int iBombEnt = -1;
 
 //FFA Stuff
 enum OperatingSystem
@@ -62,7 +60,7 @@ enum OperatingSystem
 	OperatingSystem_Mac
 };
 
-new OperatingSystem:iOS;
+OperatingSystem iOS;
 
 enum PatchType
 {
@@ -82,35 +80,31 @@ enum BytesType
 };
 
 #define MAX_BYTES 10
-new BytePatchesArray[Patch_Max][Bytes_Max][MAX_BYTES];
-new Address:PatchAddressArray[Patch_Max];
-new PatchOffsetsArray[Patch_Max];
+int BytePatchesArray[Patch_Max][Bytes_Max][MAX_BYTES];
+Address PatchAddressArray[Patch_Max];
+int PatchOffsetsArray[Patch_Max];
 
-public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
+public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
 {
 	iEngine = GetEngineVersion();
-	
+
 	if(iEngine != Engine_CSGO && iEngine != Engine_CSS)
 	{
 		strcopy(error, err_max, "This plugin is only supported on CS");
 		return APLRes_Failure;
 	}
-	
-	hGameConf = LoadGameConfigFile("cssdm.games");
+
+	hGameConf = new GameData("cssdm.games");
 	if(hGameConf == INVALID_HANDLE)
 	{
 		strcopy(error, err_max, "Failed to load game config cssdm.games.txt");
 		return APLRes_Failure;
 	}
-	
+
 	//Prepare FFA stuff
-	new offset = GameConfGetOffset(hGameConf, "g_pGameRules");
-	
-	if(offset == 0)
-	{
-		iOS = OperatingSystem_Mac;
-	}
-	else if(offset == 1)
+	int offset = hGameConf.GetOffset("g_pGameRules");
+
+	if(offset == 1)
 	{
 		iOS = OperatingSystem_Linux;
 	}
@@ -132,11 +126,11 @@ public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
 	CreateNative("DM_RespawnClient", DMN_RespawnClient);
 	CreateNative("DM_IsClientAlive", DMN_IsClientAlive);
 	CreateNative("DM_GiveClientAmmo", DMN_GiveAmmo);
-	
+
 	//New natives for 3.0
 	CreateNative("DM_IsFFAEnabled", DMN_IsFFAEnabled);
-	
-	hWeaponIDTrie = CreateTrie();
+
+	hWeaponIDTrie = new StringMap();
 	if(FileExists("cfg/cssdm/cssdm.weapons.txt"))
 	{
 		if(!ParseWeaponConfig("cfg/cssdm/cssdm.weapons.txt"))
@@ -149,7 +143,7 @@ public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
 	return APLRes_Success;
 }
 
-public OnPluginStart()
+public void OnPluginStart()
 {
 	hOnStartup = CreateGlobalForward("DM_OnStartup", ET_Ignore);
 	hOnShutdown = CreateGlobalForward("DM_OnShutdown", ET_Ignore);
@@ -157,8 +151,8 @@ public OnPluginStart()
 	hOnClientSpawnedPost = CreateGlobalForward("DM_OnClientPostSpawned", ET_Ignore, Param_Cell);
 	hOnClientDeath = CreateGlobalForward("DM_OnClientDeath", ET_Ignore, Param_Cell);
 	hOnSetSpawnMethod = CreateGlobalForward("DM_OnSetSpawnMethod", ET_Ignore, Param_String);
-	
-	CreateConVar("cssdm_version", CSSDM_VERSION, "CS:S DM Version", FCVAR_REPLICATED|FCVAR_NOTIFY|FCVAR_DONTRECORD);
+
+	hVersion = CreateConVar("cssdm_version", CSSDM_VERSION, "CS:S DM Version", FCVAR_REPLICATED|FCVAR_NOTIFY|FCVAR_DONTRECORD);
 	hRagdollTime = CreateConVar("cssdm_ragdoll_time", "2", "Sets ragdoll stay time", _, true, 0.0, true, 20.0);
 	hRespawnWait = CreateConVar("cssdm_respawn_wait", "0.75", "Sets respawn wait time");
 	hAllowC4 = CreateConVar("cssdm_allow_c4", "0", "Sets whether C4 is allowed");
@@ -166,50 +160,44 @@ public OnPluginStart()
 	hFFAEnabled = CreateConVar("cssdm_ffa_enabled", "0", "Sets whether Free-For-All mode is enabled", FCVAR_REPLICATED|FCVAR_NOTIFY);
 	hSpawnMethod = CreateConVar("cssdm_spawn_method", "preset", "Sets how and where players are spawned");
 	hRemoveDrops = CreateConVar("cssdm_remove_drops", "1", "Sets whether dropped items are removed");
-	
-	HookConVarChange(hEnabled, ChangeStatus);
-	HookConVarChange(hFFAEnabled, ChangeFFAStatus);
-	HookConVarChange(hSpawnMethod, ChangeSpawnStatus);
-	HookConVarChange(hRagdollTime, ChangeRagdollTime);
-	HookConVarChange(hAllowC4, ChangeAllowC4);
-	HookConVarChange(hRespawnWait, ConVarChange);
-	HookConVarChange(hRemoveDrops, ConVarChange);
-	
-	bRemoveDropped = GetConVarBool(hRemoveDrops);
-	fRespawnTime = GetConVarFloat(hRespawnWait);
-	iRagdollTime = GetConVarInt(hRagdollTime);
-	bAllowC4 = GetConVarBool(hAllowC4);
-	
+
+	hEnabled.AddChangeHook(ChangeStatus);
+	hFFAEnabled.AddChangeHook(ChangeFFAStatus);
+	hSpawnMethod.AddChangeHook(ChangeSpawnStatus);
+	hAllowC4.AddChangeHook(ChangeAllowC4);
+
+	bAllowC4 = hAllowC4.BoolValue;
+
 	bAllowFFA = PrepareFFA();
-	
+
 	if(!bAllowFFA)
 	{
 		LogError("Free-For-All will not work, Failed to get patch bytes");
 	}
-	
+
 	AutoExecConfig(true, "cssdm", "cssdm");
 	//bGiveAmmoNative = (GetFeatureStatus(FeatureType_Native, "GivePlayerAmmo") == FeatureStatus_Available)
 }
 
-public OnClientPutInServer(client)
+public void OnClientPutInServer(int client)
 {
 	if(!bIsRunning)
 		return;
-	
+
 	if(!bAllowC4)
 	{
 		SDKHook(client, SDKHook_WeaponCanUse, Hook_CanUse);
 	}
-	
+
 	hRespawnTimers[client] = INVALID_HANDLE;
 }
 
-public OnClientDisconnect(client)
+public void OnClientDisconnect(int client)
 {
 	KillRespawnTimer(client);
 }
 
-public OnConfigsExecuted()
+public void OnConfigsExecuted()
 {
 	iBombEnt = -1;
 	bInRoundRestart = false;
@@ -227,7 +215,7 @@ public OnConfigsExecuted()
 	}
 }
 
-public OnMapEnd()
+public void OnMapEnd()
 {
 	if(bConfigRan)
 	{
@@ -245,7 +233,7 @@ public OnMapEnd()
 	}
 }
 
-public OnEntityCreated(entity, const String:classname[])
+public void OnEntityCreated(int entity, const char[] classname)
 {
 	if(StrEqual(classname, "weapon_c4"))
 	{
@@ -257,7 +245,7 @@ public OnEntityCreated(entity, const String:classname[])
 	}
 }
 
-public OnEntityDestroyed(entity)
+public void OnEntityDestroyed(int entity)
 {
 	if(entity == iBombEnt)
 	{
@@ -265,36 +253,23 @@ public OnEntityDestroyed(entity)
 	}
 }
 
-public OnPluginEnd()
+public void OnPluginEnd()
 {
 	//Unpatch if we patched.
 	DisableFFA();
 }
-public Action:CS_OnCSWeaponDrop(client, weaponIndex)
+public Action CS_OnCSWeaponDrop(int client, int weaponIndex, bool donated)
 {
-	if(bRemoveDropped)
+	if(hRemoveDrops.BoolValue)
 	{
 		AcceptEntityInput(weaponIndex, "Kill");
 	}
 	return Plugin_Continue;
 }
 
-//Convar Hooks
-public ConVarChange(Handle:convar, const String:oldValue[], const String:newValue[])
+public void ChangeAllowC4(ConVar convar, const char[] oldValue, const char[] newValue)
 {
-	if(hRespawnWait == convar)
-	{
-		fRespawnTime = GetConVarFloat(hRespawnWait);
-	}
-	else if(hRemoveDrops == convar)
-	{
-		bRemoveDropped = GetConVarBool(hRemoveDrops);
-	}
-}
-
-public ChangeAllowC4(Handle:convar, const String:oldValue[], const String:newValue[])
-{
-	new bool:bNewVal = GetConVarBool(hAllowC4);
+	bool bNewVal = hAllowC4.BoolValue;
 	if(!bAllowC4 && bNewVal)
 	{
 		for(new i = 1; i <= MaxClients; i++)
@@ -315,17 +290,12 @@ public ChangeAllowC4(Handle:convar, const String:oldValue[], const String:newVal
 			}
 		}
 	}
-	bAllowC4 = bNewVal
+	bAllowC4 = bNewVal;
 }
 
-public ChangeRagdollTime(Handle:convar, const String:oldValue[], const String:newValue[])
+public void ChangeStatus(ConVar convar, const char[] oldValue, const char[] newValue)
 {
-	iRagdollTime = GetConVarInt(hRagdollTime);
-}
-
-public ChangeStatus(Handle:convar, const String:oldValue[], const String:newValue[])
-{
-	if(GetConVarBool(hEnabled))
+	if(hEnabled.BoolValue)
 	{
 		Enable();
 	}
@@ -335,9 +305,9 @@ public ChangeStatus(Handle:convar, const String:oldValue[], const String:newValu
 	}
 }
 
-public ChangeFFAStatus(Handle:convar, const String:oldValue[], const String:newValue[])
+public void ChangeFFAStatus(ConVar convar, const char[] oldValue, const char[] newValue)
 {
-	if(GetConVarBool(hFFAEnabled))
+	if(hFFAEnabled.BoolValue)
 	{
 		EnableFFA();
 	}
@@ -347,7 +317,7 @@ public ChangeFFAStatus(Handle:convar, const String:oldValue[], const String:newV
 	}
 }
 
-public ChangeSpawnStatus(Handle:convar, const String:oldValue[], const String:newValue[])
+public void ChangeSpawnStatus(ConVar convar, const char[] oldValue, const char[] newValue)
 {
 	if(!StrEqual(oldValue, newValue))
 	{
@@ -358,40 +328,39 @@ public ChangeSpawnStatus(Handle:convar, const String:oldValue[], const String:ne
 }
 
 //Natives
-public DMN_GetSpawnMethod(Handle:hPlugin, iNumParams)
+public void DMN_GetSpawnMethod(Handle hPlugin, int iNumParams)
 {
-	new String:szSpawnMethod[32];
-	GetConVarString(hSpawnMethod, szSpawnMethod, sizeof(szSpawnMethod));
+	char szSpawnMethod[32];
+	hSpawnMethod.GetString(szSpawnMethod, sizeof(szSpawnMethod));
 	SetNativeString(1, szSpawnMethod, GetNativeCell(2));
-	return 1;
 }
 
-public DMN_GetWeaponID(Handle:hPlugin, iNumParams)
+public int DMN_GetWeaponID(Handle hPlugin, int iNumParams)
 {
-	new String:weaponName[64];
-	new id;
+	char weaponName[64];
+	int id;
 	GetNativeString(1, weaponName, sizeof(weaponName));
-	if(GetTrieValue(hWeaponIDTrie, weaponName, id))
+	if(hWeaponIDTrie.GetValue(weaponName, id))
 	{
 		return id;
 	}
 	return -1;
 }
 
-public DMN_GetWeaponType(Handle:hPlugin, iNumParams)
+public DmWeaponType DMN_GetWeaponType(Handle:hPlugin, iNumParams)
 {
-	new id = GetNativeCell(1);
+	int id = GetNativeCell(1);
 	if(id < 0 || id >= iMaxWeapons)
 	{
 		return ThrowNativeError(SP_ERROR_NATIVE, "Invalid CS:S DM weapon id (%d)", id);
 	}
-	return _:iWeaponType[id];
+	return iWeaponType[id];
 }
 
-public DMN_StripBotItems(Handle:hPlugin, iNumParams)
+public void DMN_StripBotItems(Handle hPlugin, int iNumParams)
 {
-	static iMyWeaponsMax = 0;
-	
+	static int iMyWeaponsMax = 0;
+
 	if(!iMyWeaponsMax)
 	{
 		if(iEngine == Engine_CSGO)
@@ -403,9 +372,9 @@ public DMN_StripBotItems(Handle:hPlugin, iNumParams)
 			iMyWeaponsMax = 32;
 		}
 	}
-	
-	new client = GetNativeCell(1);
-	
+
+	int client = GetNativeCell(1);
+
 	if(client <= 0 || client > MaxClients)
 	{
 		return ThrowNativeError(SP_ERROR_NATIVE, "Invalid client index %d", client);
@@ -418,9 +387,9 @@ public DMN_StripBotItems(Handle:hPlugin, iNumParams)
 	{
 		return ThrowNativeError(SP_ERROR_NATIVE, "Client %d is not a bot", client);
 	}
-	
-	new weapon;
-	for(new x = 0; x < iMyWeaponsMax; x++)
+
+	int weapon;
+	for(int x = 0; x < iMyWeaponsMax; x++)
 	{
 		weapon = GetEntPropEnt(client, Prop_Send, "m_hMyWeapons", x);
 		if(weapon && IsValidEdict(weapon))
@@ -431,115 +400,110 @@ public DMN_StripBotItems(Handle:hPlugin, iNumParams)
 	SetEntProp(client, Prop_Send, "m_bHasDefuser", 0);
 	SetEntProp(client, Prop_Send, "m_ArmorValue", 0);
 	SetEntProp(client, Prop_Send, "m_bHasHelmet", 0);
-	
-	return 1;
 }
 
-public DMN_GetWeaponClassname(Handle:hPlugin, iNumParams)
+public void DMN_GetWeaponClassname(Handle hPlugin, int iNumParams)
 {
-	new id = GetNativeCell(1);
+	int id = GetNativeCell(1);
 	if(id < 0 || id >= iMaxWeapons)
 	{
 		return ThrowNativeError(SP_ERROR_NATIVE, "Invalid CS:S DM weapon id (%d)", id);
 	}
 	SetNativeString(2, szClassnames[id], GetNativeCell(3));
-	
-	return 1;
 }
 
-public DMN_GetClientWeapon(Handle:hPlugin, iNumParams)
+public int DMN_GetClientWeapon(Handle hPlugin, int iNumParams)
 {
 	return GetPlayerWeaponSlot(GetNativeCell(1), GetNativeCell(2));
 }
 
-public DMN_DropWeapon(Handle:hPlugin, iNumParams)
+public void DMN_DropWeapon(Handle hPlugin, int iNumParams)
 {
-	new weapon = GetNativeCell(2);
-	new client = GetNativeCell(1);
-	
+	int weapon = GetNativeCell(2);
+	int client = GetNativeCell(1);
+
 	DM_DropWeaponRemove(client, weapon);
 }
 
-public DMN_GetWeaponName(Handle:hPlugin, iNumParams)
+public void DMN_GetWeaponName(Handle hPlugin, int iNumParams)
 {
-	new id = GetNativeCell(1);
+	int id = GetNativeCell(1);
 	if(id < 0 || id >= iMaxWeapons)
 	{
 		return ThrowNativeError(SP_ERROR_NATIVE, "Invalid CS:S DM weapon id (%d)", id);
 	}
 	SetNativeString(2, szWeaponNames[id], GetNativeCell(3));
-	
-	return 1;
 }
 
-public DMN_IsRunning(Handle:hPlugin, iNumParams)
+public bool DMN_IsRunning(Handle hPlugin, int iNumParams)
 {
 	return bIsRunning;
 }
 
-public DMN_GetSpawnWaitTime(Handle:hPlugin, iNumParams)
+public float DMN_GetSpawnWaitTime(Handle hPlugin, int iNumParams)
 {
-	return _:GetConVarFloat(hRespawnWait);
+	return hRespawnWait.FloatValue;
 }
 
-public DMN_RespawnClient(Handle:hPlugin, iNumParams)
+public void DMN_RespawnClient(Handle hPlugin, int iNumParams)
 {
 	CS_RespawnPlayer(GetNativeCell(1));
-	return 1;
 }
 
-public DMN_IsClientAlive(Handle:hPlugin, iNumParams)
+public bool DMN_IsClientAlive(Handle hPlugin, int iNumParams)
 {
 	return IsPlayerAlive(GetNativeCell(1));
 }
 
-public DMN_GiveAmmo(Handle:hPlugin, iNumParams)
+public int DMN_GiveAmmo(Handle hPlugin, int iNumParams)
 {
-	static Handle:hGiveAmmo = INVALID_HANDLE;
+	Handle hGiveAmmo = INVALID_HANDLE;
+	StartPrepSDKCall(SDKCall_Entity);
+	PrepSDKCall_SetFromConf(hGameConf, SDKConf_Virtual, "GiveAmmo");
+	PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
+	PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
+	PrepSDKCall_AddParameter(SDKType_Bool, SDKPass_Plain);
+	PrepSDKCall_SetReturnInfo(SDKType_PlainOldData, SDKPass_Plain);
+
+	hGiveAmmo = EndPrepSDKCall();
+
 	if(!hGiveAmmo)
 	{
-		StartPrepSDKCall(SDKCall_Entity);
-		PrepSDKCall_SetFromConf(hGameConf, SDKConf_Virtual, "GiveAmmo");
-		PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
-		PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
-		PrepSDKCall_AddParameter(SDKType_Bool, SDKPass_Plain);
-		PrepSDKCall_SetReturnInfo(SDKType_PlainOldData, SDKPass_Plain);
-		
-		hGiveAmmo = EndPrepSDKCall();
-		
-		if(!hGiveAmmo)
-		{
-			return ThrowNativeError(SP_ERROR_NATIVE, "Failed to create GiveAmmo SDKCall");
-		}
+		ThrowNativeError(SP_ERROR_NATIVE, "Failed to create GiveAmmo SDKCall");
+		return 0;
 	}
-	
-	return SDKCall(hGiveAmmo, GetNativeCell(1), GetNativeCell(3), GetNativeCell(2), GetNativeCell(4)? true : false);
+
+	int res = SDKCall(hGiveAmmo, GetNativeCell(1), GetNativeCell(3), GetNativeCell(2), GetNativeCell(4)? true : false);
+
+	delete hGiveAmmo;
+
+	return res;
 }
 
-public DMN_IsFFAEnabled(Handle:hPlugin, iNumParams)
+public bool DMN_IsFFAEnabled(Handle hPlugin, int iNumParams)
 {
 	return bFFAEnabled;
 }
 
 //Hook callbacks
-public Action:Hook_CanUse(client, weapon)
+public Action Hook_CanUse(int client, int weapon)
 {
 	if(iBombEnt == -1 || weapon != iBombEnt || bAllowC4)
 	{
 		return Plugin_Continue;
 	}
-	
+
 	//Dont ever allow the bomb!
 	return Plugin_Handled;
 }
 
-public Hook_SpawnPost(entity)
+public void Hook_SpawnPost(int entity)
 {
 	//Kill defusers
 	AcceptEntityInput(entity, "Kill");
 }
 
-public Action:OnJoinClass(client, const String:command[], args) 
+public Action OnJoinClass(int client, const char[] command, int args)
 {
 	//Respawn him next frame if he hasnt already
 	if(client && IsClientInGame(client))
@@ -549,110 +513,115 @@ public Action:OnJoinClass(client, const String:command[], args)
 	return Plugin_Continue;
 }
 
-public Action:Event_PlayerDeath(Handle:event, const String:name[], bool:dontBroadcast)
+public Action Event_PlayerDeath(Event event, const char[] name, bool dontBroadcast)
 {
 	if(!bIsRunning)
 		return Plugin_Continue;
-	
-	new client = GetClientOfUserId(GetEventInt(event, "userid"));
-	
+
+	int ragdoolTime = hRagdollTime.IntValue;
+	int client = GetClientOfUserId(event.GetInt("userid"));
+
 	if(client && IsClientInGame(client))
 	{
 		SetEntProp(client, Prop_Send, "m_bHasDefuser", 0);
-		
+
 		Call_StartForward(hOnClientDeath);
 		Call_PushCell(client);
-		
-		new Action:res = Plugin_Continue;
+
+		Action res = Plugin_Continue;
 		Call_Finish(res);
-		
-		if(iRagdollTime <= 20 && iRagdollTime >= 0)
+
+		if(ragdollTime <= 20 && ragdollTime >= 0)
 		{
-			new ragdoll = GetEntPropEnt(client, Prop_Send, "m_hRagdoll");
-			
+			int ragdoll = GetEntPropEnt(client, Prop_Send, "m_hRagdoll");
+
 			if(ragdoll && IsValidEntity(ragdoll))
 			{
-				if(iRagdollTime == 0)
+				if(ragdollTime == 0)
 				{
 					AcceptEntityInput(ragdoll, "Kill");
 				}
 				else
 				{
-					new ref = EntIndexToEntRef(ragdoll);
+					int ref = EntIndexToEntRef(ragdoll);
 					if(ref != INVALID_ENT_REFERENCE)
 					{
-						CreateTimer(float(iRagdollTime), TimeRagdollRemove, ref, TIMER_FLAG_NO_MAPCHANGE);
+						CreateTimer(float(ragdoolTime), TimeRagdollRemove, ref, TIMER_FLAG_NO_MAPCHANGE);
 					}
 				}
 			}
 		}
-		
+
 		if(res == Plugin_Continue)
 		{
-			hRespawnTimers[client] = CreateTimer(fRespawnTime, TimeRespawnPlayer, GetClientSerial(client));
+			hRespawnTimers[client] = CreateTimer(hRespawnWait.FloatValue, TimeRespawnPlayer, GetClientSerial(client));
 		}
 	}
-	
+
 	return Plugin_Continue;
 }
 
-public Action:Event_PlayerSpawn(Handle:event, const String:name[], bool:dontBroadcast)
+public Action Event_PlayerSpawn(Event event, const char[] name, bool dontBroadcast)
 {
-	new client = GetClientOfUserId(GetEventInt(event, "userid"));
-	
+	int client = GetClientOfUserId(event.GetInt("userid"));
+
 	if(client <= 0 || client > MaxClients || !IsClientInGame(client) || GetClientTeam(client) <= CS_TEAM_SPECTATOR)
 	{
 		return Plugin_Continue;
 	}
-	
+
 	Call_StartForward(hOnClientSpawned);
 	Call_PushCell(client);
 	Call_Finish();
 	Call_StartForward(hOnClientSpawnedPost);
 	Call_PushCell(client);
 	Call_Finish();
-	
+
 	return Plugin_Continue;
 }
 
-public Action:Event_RoundStart(Handle:event, const String:name[], bool:dontBroadcast)
+public Action Event_RoundStart(Event event, const char[] name, bool dontBroadcast)
 {
 	bInRoundRestart = false;
-	
+
 	return Plugin_Continue;
 }
 
-public Action:Event_RoundEnd(Handle:event, const String:name[], bool:dontBroadcast)
+public Action Event_RoundEnd(Event event, const char[] name, bool dontBroadcast)
 {
 	bInRoundRestart = true;
-	
-	for(new i = 1; i <= MaxClients; i++)
+
+	for(int i = 1; i <= MaxClients; i++)
 	{
 		KillRespawnTimer(i);
 	}
-	
+
 	return Plugin_Continue;
 }
 
 //Timer callbacks
-public Action:TimeRespawnPlayer(Handle:timer, any:serial)
+public Action TimeRespawnPlayer(Handle timer, int serial)
 {
-	new client = GetClientFromSerial(serial);
-	
+	int client = GetClientFromSerial(serial);
+
 	if(client && IsClientInGame(client))
 	{
 		if(bIsRunning && !bInRoundRestart)
 		{
 			CS_RespawnPlayer(client);
 		}
+		if (hRespawnTimers[client])
+		{
+			delete hRespawnTimers[client];
+		}
 		hRespawnTimers[client] = INVALID_HANDLE;
 	}
 	return Plugin_Continue;
 }
 
-public Action:TimeRagdollRemove(Handle:timer, any:ref)
+public Action TimeRagdollRemove(Handle timer, int ref)
 {
-	new index = EntRefToEntIndex(ref);
+	int index = EntRefToEntIndex(ref);
 	if(bIsRunning && index != INVALID_ENT_REFERENCE)
 	{
 		AcceptEntityInput(index, "Kill");
@@ -661,12 +630,15 @@ public Action:TimeRagdollRemove(Handle:timer, any:ref)
 }
 
 //Private functions
-GetCurrentMapEx(String:map[], size)
+
+// is this even necessary?
+void GetCurrentMapEx(char map[], int size)
 {
 	GetCurrentMap(map, size);
-	
-	new index = -1;
-	for(new i = 0; i < strlen(map); i++)
+
+	int index = -1;
+	int mapLen = strlen(map);
+	for(int i = 0; i < mapLen; i++)
 	{
 		if(StrContains(map[i], "/") != -1 || StrContains(map[i], "\\") != -1)
 		{
@@ -681,51 +653,51 @@ GetCurrentMapEx(String:map[], size)
 	strcopy(map, size, map[index+1]);
 }
 
-bool:ParseWeaponConfig(const String:szWeaponCfg[])
+bool ParseWeaponConfig(const char[] szWeaponCfg)
 {
-	static String:game[32] = "";
-	
+	static char game[32] = "";
+
 	if(strlen(game) <= 1)
 	{
 		GetGameFolderName(game, sizeof(game));
 	}
-	
-	new Handle:kv = CreateKeyValues("Weapons");
-	
-	if(!FileToKeyValues(kv, szWeaponCfg))
+
+	KeyValues kv = new KeyValues("Weapons");
+
+	if(!kv.ImportFromFile(szWeaponCfg))
 	{
-		CloseHandle(kv);
+		delete kv;
 		return false;
 	}
-	
-	if(!KvJumpToKey(kv, game))
+
+	if(!kv.JumpToKey(game))
 	{
-		CloseHandle(kv);
+		delete kv;
 		return false;
 	}
-	
-	if(!KvGotoFirstSubKey(kv))
+
+	if(!kv.GotoFirstSubKey())
 	{
-		CloseHandle(kv);
+		delete kv;
 		return false;
 	}
-	
-	new String:name[64];
-	new String:type[32];
-	
+
+	char name[64];
+	char type[32];
+
 	iMaxWeapons = 0;
-	
+
 	do
 	{
-		KvGetSectionName(kv, name, sizeof(name));
+		kv.GetSectionName(name, sizeof(name));
 		StringToLower(name);
-		SetTrieValue(hWeaponIDTrie, name, iMaxWeapons);
+		hWeaponIDTrie.SetValue(name, iMaxWeapons);
 		Format(szClassnames[iMaxWeapons], sizeof(szClassnames[]), "weapon_%s", name);
-		KvGetString(kv, "name", szWeaponNames[iMaxWeapons], sizeof(szWeaponNames[]), name);
-		KvGetString(kv, "type", type, sizeof(type), "");
-		
+		kv.GetString("name", szWeaponNames[iMaxWeapons], sizeof(szWeaponNames[]), name);
+		kv.GetString("type", type, sizeof(type), "");
+
 		iWeaponType[iMaxWeapons] = DmWeapon_Invalid;
-		
+
 		if(StrEqual("primary", type))
 		{
 			iWeaponType[iMaxWeapons] = DmWeapon_Primary;
@@ -742,7 +714,7 @@ bool:ParseWeaponConfig(const String:szWeaponCfg[])
 		{
 			iWeaponType[iMaxWeapons] = DmWeapon_C4;
 		}
-		
+
 		if(iWeaponType[iMaxWeapons] != DmWeapon_Invalid)
 		{
 			iMaxWeapons++;
@@ -751,43 +723,44 @@ bool:ParseWeaponConfig(const String:szWeaponCfg[])
 		{
 			szClassnames[iMaxWeapons] = "";
 			szWeaponNames[iMaxWeapons] = ""
-			RemoveFromTrie(hWeaponIDTrie, name);
+			hWeaponIDTrie.Remove(name);
 		}
-		
-	}while (KvGotoNextKey(kv));
-	
-	CloseHandle(kv);
+
+	} while (KvGotoNextKey(kv));
+
+	delete kv;
 	return true;
 }
 
-bool:ParseConfigs()
+bool ParseConfigs()
 {
 	if(bConfigRan)
 		return true;
-	
+
 	//Execute the map sepcific file if it exists
-	new String:buffer[PLATFORM_MAX_PATH];
-	new String:map[64];
-	
+	char buffer[PLATFORM_MAX_PATH];
+	char map[64];
+
 	GetCurrentMapEx(map, sizeof(map));
-	
+
 	Format(buffer, sizeof(buffer), "exec cssdm/maps/%s.cssdm.cfg", map);
-	
+	ServerCommand(buffer);
+
 	bConfigRan = true;
 	return true;
 }
 
-HookEvents()
+void HookEvents()
 {
 	HookEvent("player_death", Event_PlayerDeath);
 	HookEvent("player_spawn", Event_PlayerSpawn);
-	HookEvent("round_start", Event_RoundStart);
-	HookEvent("round_end", Event_RoundEnd);
+	HookEvent("round_start", Event_RoundStart, EventHookMode_PostNoCopy);
+	HookEvent("round_end", Event_RoundEnd, EventHookMode_PostNoCopy);
 	AddCommandListener(OnJoinClass, "joinclass");
-	
+
 	if(!bAllowC4)
 	{
-		for(new i = 1; i <= MaxClients; i++)
+		for(int i = 1; i <= MaxClients; i++)
 		{
 			if(IsClientInGame(i))
 			{
@@ -797,17 +770,17 @@ HookEvents()
 	}
 }
 
-UnhookEvents()
+void UnhookEvents()
 {
 	UnhookEvent("player_death", Event_PlayerDeath);
 	UnhookEvent("player_spawn", Event_PlayerSpawn);
 	UnhookEvent("round_start", Event_RoundStart);
 	UnhookEvent("round_end", Event_RoundEnd);
 	RemoveCommandListener(OnJoinClass, "joinclass");
-	
+
 	if(!bAllowC4)
 	{
-		for(new i = 1; i <= MaxClients; i++)
+		for(int i = 1; i <= MaxClients; i++)
 		{
 			if(IsClientInGame(i))
 			{
@@ -817,65 +790,65 @@ UnhookEvents()
 	}
 }
 
-bool:Enable()
+bool Enable()
 {
 	//Dont return true more than once since we only want the forward called once
 	if(bIsRunning || !bConfigRan)
 	{
 		return false;
 	}
-	
+
 	HookEvents();
 	bIsRunning = true;
 	return true;
 }
-Disable()
+void Disable()
 {
 	if(!bIsRunning)
 	{
 		return;
 	}
-	
+
 	//Clear Timers
-	for(new i = 1; i <= MaxClients; i++)
+	for(int i = 1; i <= MaxClients; i++)
 	{
 		KillRespawnTimer(i);
 	}
-	
+
 	UnhookEvents();
 	bIsRunning = false;
 }
 
-EnableFFA()
+void EnableFFA()
 {
 	if(!bAllowFFA || !bIsRunning || bFFAEnabled)
-		return;	
-	
-	for(new i = 0; i < _:Patch_Max; i++)
+		return;
+
+	for(int i = 0; i < view_as<int>(Patch_Max); i++)
 	{
-		if(!CheckIfShouldPatch(LoadFromAddress(PatchAddressArray[i]+Address:(PatchOffsetsArray[i]), NumberType_Int8)))
+		if(!CheckIfShouldPatch(LoadFromAddress(PatchAddressArray[i]+view_as<Address>(PatchOffsetsArray[i]), NumberType_Int8)))
 		{
 			LogError("Failed to enable FFA. Failed to find valid byte to patch for PatchType (%i)", i);
 			return;
 		}
 	}
-	
-	new byte = 0;
-	
-	for(new i = 0; i < _:Patch_Max; i++)
+
+	int byte = 0;
+
+	for(int i = 0; i < view_as<int>(Patch_Max); i++)
 	{
 		byte = 0;
-		
-		if(iEngine == Engine_CSS && i == _:Patch_TakeDamage2)
+
+		if(iEngine == Engine_CSS && i == view_as<int>(Patch_TakeDamage2))
 			continue;
-		
+
 		while(BytePatchesArray[i][Bytes_Patch][byte] != -1)
 		{
 			if(BytePatchesArray[i][Bytes_Original][byte] == -1)//Save the bytes if its our first time
 			{
-				BytePatchesArray[i][Bytes_Original][byte] = LoadFromAddress(PatchAddressArray[i]+Address:(byte+PatchOffsetsArray[i]), NumberType_Int8);
+				BytePatchesArray[i][Bytes_Original][byte] = LoadFromAddress(PatchAddressArray[i]+view_as<Address>(byte+PatchOffsetsArray[i]), NumberType_Int8);
 			}
-			StoreToAddress(PatchAddressArray[i]+Address:(byte+PatchOffsetsArray[i]), BytePatchesArray[i][Bytes_Patch][byte], NumberType_Int8);
+			StoreToAddress(PatchAddressArray[i]+view_as<Address>(byte+PatchOffsetsArray[i]), BytePatchesArray[i][Bytes_Patch][byte], NumberType_Int8);
 			byte++;
 		}
 	}
@@ -883,51 +856,51 @@ EnableFFA()
 	bFFAEnabled = true;
 }
 
-DisableFFA()
+void DisableFFA()
 {
 	if(!bFFAEnabled)
 		return;
-	
-	new byte = 0;
-	
-	for(new i = 0; i < _:Patch_Max; i++)
+
+	int byte = 0;
+
+	for(new i = 0; i < view_as<int>(Patch_Max); i++)
 	{
 		byte = 0;
-		
-		if(iEngine == Engine_CSS && i == _:Patch_TakeDamage2)
+
+		if(iEngine == Engine_CSS && i == view_as<int>(Patch_TakeDamage2))
 			continue;
-		
+
 		while(BytePatchesArray[i][Bytes_Original][byte] != -1)
 		{
-			StoreToAddress(PatchAddressArray[i]+Address:(byte+PatchOffsetsArray[i]), BytePatchesArray[i][Bytes_Original][byte], NumberType_Int8);
+			StoreToAddress(PatchAddressArray[i]+view_as<Address>(byte+PatchOffsetsArray[i]), BytePatchesArray[i][Bytes_Original][byte], NumberType_Int8);
 			byte++;
 		}
 	}
-	
+
 	bFFAEnabled = false;
 }
 
-bool:PrepareFFA()
+bool PrepareFFA()
 {
-	for(new i = 0; i < MAX_BYTES; i++)
+	for(int i = 0; i < MAX_BYTES; i++)
 	{
-		for(new x = 0; x < _:Patch_Max; x++)
+		for(int x = 0; x < view_as<int>(Patch_Max); x++)
 		{
-			for(new j = 0; j < _:Bytes_Max; j++)
+			for(int j = 0; j < view_as<int>(Bytes_Max); j++)
 			{
 				BytePatchesArray[x][j][i] = -1;
 			}
 		}
 	}
-	
-	new String:szKey[32];
-	new String:szTakeDmg1[32];
-	new String:szTakeDmg2[32];
-	new String:szCalcDom[32];
-	new String:szLagComp[32];
-	new String:szIPoints[32];
-	new String:szOS[10];
-	
+
+	char szKey[32];
+	char szTakeDmg1[32];
+	char szTakeDmg2[32];
+	char szCalcDom[32];
+	char szLagComp[32];
+	char szIPoints[32];
+	char szOS[10];
+
 	if(iOS == OperatingSystem_Linux)
 	{
 		strcopy(szOS, sizeof(szOS), "Linux");
@@ -941,85 +914,88 @@ bool:PrepareFFA()
 		strcopy(szOS, sizeof(szOS), "Windows");
 	}
 
-	
+
 	Format(szTakeDmg1, sizeof(szTakeDmg1), "TakeDmgPatch1_%s", szOS);
 	Format(szTakeDmg2, sizeof(szTakeDmg2), "TakeDmgPatch2_%s", szOS);
 	Format(szCalcDom, sizeof(szCalcDom), "CalcDomRevPatch_%s", szOS);
 	Format(szLagComp, sizeof(szLagComp), "LagCompPatch_%s", szOS);
 	Format(szIPoints, sizeof(szIPoints), "IPointsForKillPatch_%s", szOS);
-	
-	if(!GameConfGetKeyValue(hGameConf, szTakeDmg1, szKey, sizeof(szKey)) || !GetBytes(szKey, BytePatchesArray[Patch_TakeDamage1][Bytes_Patch]))
+
+	if(!hGameConf.GetKeyValue(szTakeDmg1, szKey, sizeof(szKey)) || !GetBytes(szKey, BytePatchesArray[Patch_TakeDamage1][Bytes_Patch]))
 	{
 		LogError("Failed to get %s", szTakeDmg1);
 		return false;
 	}
-	
-	if(!GameConfGetKeyValue(hGameConf, szTakeDmg2, szKey, sizeof(szKey)) || !GetBytes(szKey, BytePatchesArray[Patch_TakeDamage2][Bytes_Patch]))
+
+	if (iEngine == Engine_CSGO)
 	{
-		LogError("Failed to get %s", szTakeDmg2);
-		return false;
+		if(!hGameConf.GetKeyValue(szTakeDmg2, szKey, sizeof(szKey)) || !GetBytes(szKey, BytePatchesArray[Patch_TakeDamage2][Bytes_Patch]))
+		{
+			LogError("Failed to get %s", szTakeDmg2);
+			return false;
+		}
 	}
-	
-	if(!GameConfGetKeyValue(hGameConf, szCalcDom, szKey, sizeof(szKey)) || !GetBytes(szKey, BytePatchesArray[Patch_CalcDom][Bytes_Patch]))
+
+	if(!hGameConf.GetKeyValue(szCalcDom, szKey, sizeof(szKey)) || !GetBytes(szKey, BytePatchesArray[Patch_CalcDom][Bytes_Patch]))
 	{
 		LogError("Failed to get %s", szCalcDom);
 		return false;
 	}
-	
-	if(!GameConfGetKeyValue(hGameConf, szLagComp, szKey, sizeof(szKey)) || !GetBytes(szKey, BytePatchesArray[Patch_LagComp][Bytes_Patch]))
+
+	if(!hGameConf.GetKeyValue(szLagComp, szKey, sizeof(szKey)) || !GetBytes(szKey, BytePatchesArray[Patch_LagComp][Bytes_Patch]))
 	{
 		LogError("Failed to get %s", szLagComp);
 		return false;
 	}
-	
-	if(!GameConfGetKeyValue(hGameConf, szIPoints, szKey, sizeof(szKey)) || !GetBytes(szKey, BytePatchesArray[Patch_IPointsForKills][Bytes_Patch]))
+
+	if(!hGameConf.GetKeyValue(szIPoints, szKey, sizeof(szKey)) || !GetBytes(szKey, BytePatchesArray[Patch_IPointsForKills][Bytes_Patch]))
 	{
 		LogError("Failed to get %s", szIPoints);
 		return false;
 	}
-	
-	if(!(Address:PatchAddressArray[Patch_TakeDamage1] = Address:PatchAddressArray[Patch_TakeDamage2] = GameConfGetAddress(hGameConf, "TakeDamage_Addr")))
+
+	if(!(PatchAddressArray[Patch_TakeDamage1] = PatchAddressArray[Patch_TakeDamage2] = hGameConf.GetAddress("TakeDamage_Addr")))
 	{
 		LogError("Failed to locate TakeDamage Address");
 		return false;
 	}
-	if(!(Address:PatchAddressArray[Patch_CalcDom] = GameConfGetAddress(hGameConf, "CalcDominationAndRevenge_Addr")))
+	if(!(PatchAddressArray[Patch_CalcDom] = hGameConf.GetAddress("CalcDominationAndRevenge_Addr")))
 	{
 		LogError("Failed to locate CalcDominationAndRevenge Address");
 		return false;
 	}
-	if(!(Address:PatchAddressArray[Patch_LagComp] = GameConfGetAddress(hGameConf, "WantsLagComp_Addr")))
+	if(!(PatchAddressArray[Patch_LagComp] = hGameConf.GetAddress("WantsLagComp_Addr")))
 	{
 		LogError("Failed to locate WantsLagComp Address");
 		return false;
 	}
-	if(!(Address:PatchAddressArray[Patch_IPointsForKills] = GameConfGetAddress(hGameConf, "IPointsForKill_Addr")))
+	if(!(PatchAddressArray[Patch_IPointsForKills] = hGameConf.GetAddress("IPointsForKill_Addr")))
 	{
 		LogError("Failed to locate IPointsForKill Address");
 		return false;
 	}
-	
-	if((PatchOffsetsArray[Patch_TakeDamage1] = GameConfGetOffset(hGameConf, "TakeDmgPatch1")) == -1)
+
+	if((PatchOffsetsArray[Patch_TakeDamage1] = hGameConf.GetOffset("TakeDmgPatch1")) == -1)
 	{
 		LogError("Failed to locate TakeDmgPatch1 patch offset");
 		return false;
 	}
-	if((PatchOffsetsArray[Patch_TakeDamage2] = GameConfGetOffset(hGameConf, "TakeDmgPatch2")) == -1)
+	if((PatchOffsetsArray[Patch_TakeDamage2] = hGameConf.GetOffset("TakeDmgPatch2")) == -1)
 	{
 		LogError("Failed to locate TakeDmgPatch2 patch offset");
 		return false;
 	}
-	if((PatchOffsetsArray[Patch_LagComp] = GameConfGetOffset(hGameConf, "LagCompPatch")) == -1)
+	if((PatchOffsetsArray[Patch_LagComp] = hGameConf.GetOffset("LagCompPatch")) == -1)
 	{
 		LogError("Failed to locate WantsLagComp patch offset");
 		return false;
 	}
-	if((PatchOffsetsArray[Patch_CalcDom] = GameConfGetOffset(hGameConf, "CalcDomRevPatch")) == -1)
+	if((PatchOffsetsArray[Patch_CalcDom] = hGameConf.GetOffset("CalcDomRevPatch")) == -1)
 	{
 		LogError("Failed to locate CalcDominationAndRevenge patch offset");
 		return false;
 	}
-	if((PatchOffsetsArray[Patch_IPointsForKills] = GameConfGetOffset(hGameConf, "IPointsForKillPatch")) == -1)
+	if((PatchOffsetsArray[Patch_IPointsForKills] = hGameConf.GetOffset("IPointsForKillPatch")) == -1)
 	{
 		LogError("Failed to locate IPointsForKill patch offset");
 		return false;
@@ -1028,15 +1004,15 @@ bool:PrepareFFA()
 	return true;
 }
 
-bool:GetBytes(const String:szBytes[], iBytes[MAX_BYTES])
+bool GetBytes(const char[] szBytes, int iBytes)
 {
-	new max = (strlen(szBytes)/4);
-	
+	int max = strlen(szBytes)/4;
+
 	if(max > MAX_BYTES || max < 1)
 		return false;
-	
-	new x = 0;
-	for(new i = 0; i < max; i++)
+
+	int x = 0;
+	for(int i = 0; i < max; i++)
 	{
 		if(strncmp(szBytes[i*4], "\\x90", 4) == 0)
 		{
@@ -1056,24 +1032,24 @@ bool:GetBytes(const String:szBytes[], iBytes[MAX_BYTES])
 		}
 		x++;
 	}
-	
+
 	return true;
 }
 
-bool:CheckIfShouldPatch(iByte)
+bool CheckIfShouldPatch(int iByte)
 {
 	if(iByte == 0x74 || iByte == 0x75 || iByte == 0x0F)
 		return true;
-	
+
 	return false;
 }
-DM_DropWeaponRemove(client, weapon)
+void DM_DropWeaponRemove(int client, int weapon)
 {
 	CS_DropWeapon(client, weapon, true);
 	AcceptEntityInput(weapon, "Kill");
 }
 
-KillRespawnTimer(client)
+void KillRespawnTimer(int client)
 {
 	if(hRespawnTimers[client])
 	{
@@ -1082,9 +1058,10 @@ KillRespawnTimer(client)
 	}
 }
 
-StringToLower(String:buffer[])
+void StringToLower(char buffer[])
 {
-	for(new i = 0; i < strlen(buffer); i++)
+	int bufferLen = sizeof(buffer);
+	for(int i = 0; i < bufferLen; i++)
 	{
 		buffer[i] = CharToLower(buffer[i]);
 	}

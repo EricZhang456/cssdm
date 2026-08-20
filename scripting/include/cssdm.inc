@@ -211,13 +211,9 @@ native int DM_GiveClientAmmo(int client, int type, int count, bool noSound=false
  *
  * @return				True if FFA is enabled otherwise false
  */
-<<<<<<< HEAD
-native DM_IsFFAEnabled();
+native bool DM_IsFFAEnabled();
 
 public SharedPlugin:__pl_cssdm = 
-=======
-public Extension __ext_cssdm = 
->>>>>>> master
 {
 	name = "dm_extension_compat",
 	file = "dm_extension_compat.smx",
