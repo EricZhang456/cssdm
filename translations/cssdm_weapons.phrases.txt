@@ -1,0 +1,217 @@
+"Phrases"
+{
+	"USP"
+	{
+		"en"	"USP"
+	}
+
+	"Glock"
+	{
+		"en"	"Glock"
+	}
+
+	"Deagle"
+	{
+		"en"	"Deagle"
+	}
+
+	"P228"
+	{
+		"en"	"P228"
+	}
+
+	"Elite"
+	{
+		"en"	"Elite"
+	}
+
+	"Five Seven"
+	{
+		"en"	"Five Seven"
+	}
+
+	"M4A1"
+	{
+		"en"	"M4A1"
+	}
+
+	"AK47"
+	{
+		"en"	"AK47"
+	}
+
+	"Steyr AUG"
+	{
+		"en"	"Steyr AUG"
+	}
+
+	"SG552"
+	{
+		"en"	"SG552"
+	}
+
+	"Galil"
+	{
+		"en"	"Galil"
+	}
+
+	"Famas"
+	{
+		"en"	"Famas"
+	}
+
+	"Scout"
+	{
+		"en"	"Scout"
+	}
+
+	"SG550"
+	{
+		"en"	"SG550"
+	}
+
+	"M249"
+	{
+		"en"	"M249"
+	}
+
+	"G3SG1"
+	{
+		"en"	"G3SG1"
+	}
+
+	"UMP 45"
+	{
+		"en"	"UMP 45"
+	}
+
+	"MP5 Navy"
+	{
+		"en"	"MP5 Navy"
+	}
+
+	"M3"
+	{
+		"en"	"M3"
+	}
+
+	"XM1014"
+	{
+		"en"	"XM1014"
+	}
+
+	"TMP"
+	{
+		"en"	"TMP"
+	}
+
+	"Mac 10"
+	{
+		"en"	"Mac 10"
+	}
+
+	"P90"
+	{
+		"en"	"P90"
+	}
+
+	"AWP"
+	{
+		"en"	"AWP"
+	}
+
+	"Smoke Grenade"
+	{
+		"en"	"Smoke Grenade"
+	}
+
+	"HE Grenade"
+	{
+		"en"	"HE Grenade"
+	}
+
+	"Flashbang"
+	{
+		"en"	"Flashbang"
+	}
+
+	"C4"
+	{
+		"en"	"C4"
+	}
+
+	"HKP2000"
+	{
+		"en"	"HKP2000"
+	}
+
+	"P250"
+	{
+		"en"	"P250"
+	}
+
+	"Tec-9"
+	{
+		"en"	"Tec-9"
+	}
+
+	"SG556"
+	{
+		"en"	"SG556"
+	}
+
+	"Galil Assault Rifle"
+	{
+		"en"	"Galil Assault Rifle"
+	}
+
+	"SSG08"
+	{
+		"en"	"SSG08"
+	}
+
+	"SCAR-20"
+	{
+		"en"	"SCAR-20"
+	}
+
+	"MP7"
+	{
+		"en"	"MP7"
+	}
+
+	"Nova Shotgun"
+	{
+		"en"	"Nova Shotgun"
+	}
+
+	"MP9"
+	{
+		"en"	"MP9"
+	}
+
+	"Bizon"
+	{
+		"en"	"Bizon"
+	}
+
+	"Sawedoff Shotgun"
+	{
+		"en"	"Sawedoff Shotgun"
+	}
+
+	"MAG7"
+	{
+		"en"	"MAG7"
+	}
+
+	"Negev"
+	{
+		"en"	"Negev"
+	}
+
+	"Decoy Grenade"
+	{
+		"en"	"Decoy Grenade"
+	}
+}

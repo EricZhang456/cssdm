@@ -100,7 +100,7 @@
 		}
 		"xm1014"
 		{
-			"name"		"xm1014"
+			"name"		"XM1014"
 			"type"		"primary"
 		}
 		"tmp"
@@ -248,7 +248,7 @@
 		}
 		"xm1014"
 		{
-			"name"		"xm1014"
+			"name"		"XM1014"
 			"type"		"primary"
 		}
 		"mp9"
