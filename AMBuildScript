@@ -69,7 +69,7 @@ class ExtensionConfig(object):
 		if builder.options.targets:
 			target_archs = builder.options.targets.split(',')
 		else:
-			target_archs = ['x86']
+			target_archs = ['x86', 'x86_64']
 
 		for arch in target_archs:
 			try:
@@ -151,7 +151,7 @@ class ExtensionConfig(object):
 		self.sm_root = Normalize(self.sm_root)
 
 	def configure(self):
-		allowed_archs = ['x86']
+		allowed_archs = ['x86', 'x86_64']
 
 		if not set(self.target_archs).issubset(allowed_archs):
 			raise Exception(f'Unknown target architecture: {self.target_archs}')
@@ -417,7 +417,7 @@ class ExtensionConfig(object):
 			if task.target.arch == binary.compiler.target.arch:
 				binary.compiler.linkflags += [task.binary]
 				return
-			raise Exception('No suitable SafetyHook build was found.')
+		raise Exception('No suitable SafetyHook build was found.')
 
 class SafetyHookShim:
 	def __init__(self, ext):
@@ -439,9 +439,7 @@ if not os.path.isfile(safetyhook_build_script):
 	raise Exception("Cannot file safetyhook build script")
 old_source_path = builder.cm.sourcePath
 builder.cm.sourcePath = os.path.dirname(safetyhook_build_script)
-builder.Build('AMBuilder', {
-	"SafetyHook": SafetyHook
-})
+builder.Build('AMBuilder', { 'SafetyHook': SafetyHook })
 builder.cm.sourcePath = old_source_path
 Extension.libsafetyhook = SafetyHook.libsafetyhook
 

@@ -11,6 +11,7 @@ folder_list = [
 	'cfg/cssdm/spawns/cstrike',
 	'cfg/cssdm/spawns/csgo',
 	'addons/sourcemod/extensions',
+	'addons/sourcemod/extensions/x64',
 	'addons/sourcemod/plugins',
 	'addons/sourcemod/plugins/cssdm',
 	'addons/sourcemod/scripting',

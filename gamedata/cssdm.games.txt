@@ -142,12 +142,15 @@
 		{
 			"LagCompPatch_Windows"		"\x90\x90\x90\x90\x90\x90"
 			"LagCompPatch_Linux"		"\x90\x90\x90\x90\x90\x90"
+			"LagCompPatch_Linux64"		"\x90\x90\x90\x90\x90\x90"
 			
 			"TakeDmgPatch1_Windows"		"\xEB"
 			"TakeDmgPatch1_Linux"		"\xEB"
+			"TakeDmgPatch1_Linux64"		"\xEB"
 			
 			"CalcDomRevPatch_Windows"	"\x90\x90\x90\x90\x90\x90"
 			"CalcDomRevPatch_Linux"		"\x90\x90\x90\x90\x90\x90"
+			"CalcDomRevPatch_Linux64"	"\x90\x90\x90\x90\x90\x90"
 		}
 		"Offsets"
 		{
@@ -156,54 +159,64 @@
 			{
 				"windows"		"46"
 				"linux"			"25"
+				"linux64"		"558"
 			}
 			"TakeDmgPatch1"
 			{
 				"windows"		"844"
 				"linux"			"504"
+				"linux64"		"495"
 			}
 			/* Offset into gamerules constructor - bogo value linux/mac */
 			"g_pGameRules"
 			{
 				"windows"		"5"
 				"linux"			"1"
+				"linux64"		"1"
 			}
 			/* Virtual indexes */
 			"IPointsForKill"
 			{
 				"windows"		"80"
 				"linux"			"81"
+				"linux64"		"81"
 			}
 			"Weapon_GetSlot"
 			{
 				"windows"		"274"
 				"linux"			"275"
+				"linux64"		"275"
 			}
 			"RemoveAllItems"
 			{
 				"windows"		"348"
 				"linux"			"349"
+				"linux64"		"349"
 			}
 			"GiveAmmo"
 			{
 				"windows"		"258"
 				"linux"			"259"
+				"linux64"		"259"
 			}
 			/* Next _two_ are detour byte "save" counts */
 			"DropWeaponsPatch"
 			{
 				"windows"		"6"
 				"linux"			"6"
+				"linux64"		"6"
 			}
 			"CSWeaponDropPatch"
 			{
 				"windows"		"9"
 				"linux"			"6"
+				"linux64"		"6"
 			}
 			"CalcDomRevPatch"
 			{
 				"windows"		"65"
 				"linux"			"72"
+				"linux64"		"90"
 			}
 		}
 		"Signatures"
@@ -213,48 +226,56 @@
 				"library"		"server"
 				"windows"		"\x55\x8B\xEC\x56\x8B\x75\x08\x85\xF6\x74\x2A\x83\xC6\x0C"
 				"linux"			"@_Z11UTIL_RemoveP11CBaseEntity"
+				"linux64"		"@_Z11UTIL_RemoveP11CBaseEntity"
 			}
 			"RoundRespawn"
 			{
 				"library"	"server"
 				"windows"	"\x55\x8B\xEC\x51\x89\x4D\xFC\x8B\x45\xFC\x8B\x10"
 				"linux"		"@_ZN9CCSPlayer12RoundRespawnEv"
+				"linux64"	"@_ZN9CCSPlayer12RoundRespawnEv"
 			}
 			"OnTakeDamage"
 			{
 				"library"		"server"
 				"windows"		"\x55\x8B\xEC\x81\xEC\x40\x01\x00\x00\x56\x89\x4D\xFC"
 				"linux"			"@_ZN9CCSPlayer12OnTakeDamageERK15CTakeDamageInfo"
+				"linux64"		"@_ZN9CCSPlayer12OnTakeDamageERK15CTakeDamageInfo"
 			}
 			"WantsLagComp"
 			{
 				"library"		"server"
 				"windows"		"\x55\x8B\xEC\x83\xEC\x10\xA1\x2A\x2A\x2A\x2A\x56"
 				"linux"			"@_ZNK11CBasePlayer28WantsLagCompensationOnEntityEPKS_PK8CUserCmdPK7CBitVecILi2048EE"
+				"linux64"		"@_ZNK11CBasePlayer28WantsLagCompensationOnEntityEPKS_PK8CUserCmdPK7CBitVecILi2048EE"
 			}
 			"CGameRules"
 			{
 				"library"		"server"
 				"windows"		"\x55\x8B\xEC\x8B\x0D\x2A\x2A\x2A\x2A\x85\xC9\x74\x2A\x8B\x01\x6A\x01"
 				"linux"			"@g_pGameRules"
+				"linux64"		"@g_pGameRules"
 			}
 			"CSWeaponDrop"
 			{
 				"library"		"server"
 				"windows"		"\x55\x8B\xEC\x81\xEC\x80\x01\x00\x00\x89\x4D\xFC"
 				"linux"			"@_ZN9CCSPlayer12CSWeaponDropEP17CBaseCombatWeaponbb"
+				"linux64"		"@_ZN9CCSPlayer12CSWeaponDropEP17CBaseCombatWeaponbb"
 			}
 			"DropWeapons"
 			{
 				"library"		"server"
 				"windows"		"\x55\x8B\xEC\x83\xEC\x58\x89\x4D\xF8"
 				"linux"			"@_ZN9CCSPlayer11DropWeaponsEbb"
+				"linux64"		"@_ZN9CCSPlayer11DropWeaponsEbb"
 			}
 			"CalcDominationAndRevenge"
 			{
 				"library"		"server"
 				"windows"		"\x55\x8B\xEC\x51\xA1\x2A\x2A\x2A\x2A\x89\x4D\xFC"
 				"linux"			"@_ZN12CCSGameStats24CalcDominationAndRevengeEP9CCSPlayerS1_Pi"
+				"linux64"		"@_ZN12CCSGameStats24CalcDominationAndRevengeEP9CCSPlayerS1_Pi"
 			}
 		}
 	}

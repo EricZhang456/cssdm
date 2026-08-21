@@ -31,12 +31,18 @@
 
 SH_DECL_MANUALHOOK2(CGameRules_IPointsForKill, 62+EXTRA_VTBL_OFFSET, 0, 0, int, CBasePlayer *, CBasePlayer *);
 
+#if defined PLATFORM_64BITS
+#define PLATFORM_ARCH_SUFFIX	"64"
+#else
+#define PLATFORM_ARCH_SUFFIX	""
+#endif
+
 #if defined PLATFORM_WINDOWS
-#define PLATFORM_NAME	"Windows"
+#define PLATFORM_NAME	"Windows" PLATFORM_ARCH_SUFFIX
 #elif defined PLATFORM_LINUX
-#define PLATFORM_NAME	"Linux"
+#define PLATFORM_NAME	"Linux" PLATFORM_ARCH_SUFFIX
 #elif defined __APPLE__
-#define PLATFORM_NAME	"Mac"
+#define PLATFORM_NAME	"Mac" PLATFORM_ARCH_SUFFIX
 #endif
 
 bool g_FFA_Patched = false;
