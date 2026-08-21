@@ -125,7 +125,7 @@
 		}
 		"smokegrenade"
 		{
-			"name"		"Smode Grenade"
+			"name"		"Smoke Grenade"
 			"type"		"grenade"
 		}
 		"hegrenade"
@@ -293,7 +293,7 @@
 		}
 		"smokegrenade"
 		{
-			"name"		"Smode Grenade"
+			"name"		"Smoke Grenade"
 			"type"		"grenade"
 		}
 		"hegrenade"
