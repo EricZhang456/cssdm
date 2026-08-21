@@ -145,14 +145,34 @@
 		"en"	"HKP2000"
 	}
 
+	"R8 Revolver"
+	{
+		"en"	"R8 Revolver"
+	}
+
 	"P250"
 	{
 		"en"	"P250"
 	}
 
+	"CZ75-Auto"
+	{
+		"en"	"CZ75-Auto"
+	}
+
 	"Tec-9"
 	{
 		"en"	"Tec-9"
+	}
+
+	"M4A4"
+	{
+		"en"	"M4A4"
+	}
+
+	"M4A1-S"
+	{
+		"en"	"M4A1-S"
 	}
 
 	"SG556"
@@ -178,6 +198,11 @@
 	"MP7"
 	{
 		"en"	"MP7"
+	}
+
+	"MP5-SD"
+	{
+		"en"	"MP5-SD"
 	}
 
 	"Nova Shotgun"

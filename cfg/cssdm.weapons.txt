@@ -151,6 +151,11 @@
 			"name"		"HKP2000"
 			"type"		"secondary"
 		}
+		"usp_silencer"
+		{
+			"name"		"USP"
+			"type"		"secondary"
+		}
 		"glock"
 		{
 			"name"		"Glock"
@@ -161,9 +166,19 @@
 			"name"		"Deagle"
 			"type"		"secondary"
 		}
+		"revolver"
+		{
+			"name"		"R8 Revolver"
+			"type"		"secondary"
+		}
 		"p250"
 		{
 			"name"		"P250"
+			"type"		"secondary"
+		}
+		"cz75a"
+		{
+			"name"		"CZ75-Auto"
 			"type"		"secondary"
 		}
 		"elite"
@@ -183,7 +198,12 @@
 		}
 		"m4a1"
 		{
-			"name"		"M4A1"
+			"name"		"M4A4"
+			"type"		"primary"
+		}
+		"m4a1_silencer"
+		{
+			"name"		"M4A1-S"
 			"type"		"primary"
 		}
 		"ak47"
@@ -239,6 +259,11 @@
 		"mp7"
 		{
 			"name"		"MP7"
+			"type"		"primary"
+		}
+		"mp5sd"
+		{
+			"name"		"MP5-SD"
 			"type"		"primary"
 		}
 		"nova"
