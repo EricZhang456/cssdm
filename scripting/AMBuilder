@@ -1,0 +1,41 @@
+# vim: set ts=2 sw=2 tw=99 noet ft=python:
+import os
+
+pluginFiles = [
+	'dm_basics.sp',
+	'dm_bot_quotas.sp',
+	'dm_equipment.sp',
+	'dm_preset_spawns.sp',
+	'dm_spawn_protection.sp'
+]
+
+spcomp_argv = [
+	Extension.spcomp,
+	'-i' + os.path.join(Extension.sm_bin_root, 'addons', 'sourcemod', 'scripting', 'include'),
+	'-i' + os.path.relpath(os.path.join(builder.currentSourcePath, 'include'),
+						   os.path.join(builder.buildPath, builder.buildFolder)),
+	'-h',
+	'-E',
+]
+
+def build_plugin(script_path, smx_file):
+	inputs = [
+		Extension.spcomp,
+		script_path,
+	]
+	outputs = [
+		smx_file
+	]
+	argv = spcomp_argv + [script_path]
+	result = builder.AddCommand(
+		inputs = inputs,
+		argv = argv,
+		outputs = outputs,
+		dep_type = 'msvc',
+	)
+	Extension.plugins[smx_file], *_ = result
+
+for script_file in pluginFiles:
+	script_path = os.path.join(builder.currentSourcePath, script_file)
+	smx_file = os.path.splitext(script_file)[0] + '.smx'
+	build_plugin(script_path, smx_file)
