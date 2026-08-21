@@ -14,10 +14,6 @@ sourceFiles = [
 	'cssdm_players.cpp',
 	'cssdm_ffa.cpp',
 	'cssdm_utils.cpp',
-	# CDetour
-	'CDetour/detours.cpp',
-	# asm
-	'asm/asm.c'
 ]
 
 project = builder.LibraryProject(projectName)
@@ -39,5 +35,6 @@ for sdk_name in Extension.sdks:
 			continue
 
 		binary = Extension.HL2ExtConfig(project, builder, cxx, projectName + '.ext.' + sdk['extension'], sdk)
+		Extension.add_cdetour(binary)
 
 Extension.extensions += builder.Add(project)
