@@ -223,8 +223,8 @@ public Action Timer_Welcome(Handle timer, int userid)
 		return Plugin_Stop;
 	}
 
-	PrintToChat(client, "[CSSDM] Counter-Strike Source: Deathmatch (version %s)", CSSDM_VERSION);
-	PrintToChat(client, "[CSSDM] Visit http://www.bailopan.net/cssdm to download.");
+	PrintToChat(client, "[CSSDM] %t", "Welcome Version", CSSDM_VERSION);
+	PrintToChat(client, "[CSSDM] %t", "Welcome Download");
 
 	return Plugin_Stop;
 }
