@@ -176,7 +176,7 @@ bool DM_Prepare_FFA(char *error, size_t maxlength)
 		snprintf(error, maxlength, "Could not find g_pGameRules offset");
 		return false;
 	}
-	g_gamerules_addr = (void **)*(void **)((unsigned char *)gamerules + offset);
+	g_gamerules_addr = static_cast<void **>(*reinterpret_cast<void **>(static_cast<unsigned char *>(gamerules) + offset));
 #else
 	g_gamerules_addr = reinterpret_cast<void **>(gamerules);
 #endif

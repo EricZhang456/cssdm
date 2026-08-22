@@ -1,7 +1,7 @@
 /**
  * vim: set ts=4 :
  * ===============================================================
- * CS:S DM, Copyright (C) 2004-2007 AlliedModders LLC. 
+ * CS:S DM, Copyright (C) 2004-2007 AlliedModders LLC.
  * By David "BAILOPAN" Anderson
  * All rights reserved.
  * ===============================================================
@@ -10,17 +10,17 @@
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or (at
  * your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; see the file COPYING; if not, write to the
  * Free Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston,
  * MA 02110-1301 USA
- * 
+ *
  * Version: $Id$
  */
 
@@ -48,7 +48,7 @@ public:
 	{
 		if (g_IsRunning)
 		{
-			DMData *data = (DMData *)pData;
+			DMData *data = static_cast<DMData *>(pData);
 			int index = data->index;
 			int serial = data->serial;
 
@@ -69,7 +69,7 @@ public:
 
 	void OnTimerEnd(ITimer *pTimer, void *pData)
 	{
-		delete (DMData *)pData;
+		delete static_cast<DMData *>(pData);
 	}
 } s_RagdollRemover;
 
@@ -84,7 +84,7 @@ public:
 		}
 
 		/* Read pack data */
-		DMData *data = (DMData *)pData;
+		DMData *data = static_cast<DMData *>(pData);
 		int client = data->index;
 
 		dm_player_t *player = DM_GetPlayer(client);
@@ -109,7 +109,7 @@ public:
 
 	void OnTimerEnd(ITimer *pTimer, void *pData)
 	{
-		DMData *data = (DMData *)pData;
+		DMData *data = static_cast<DMData *>(pData);
 		int client = data->index;
 
 		dm_player_t *player = DM_GetPlayer(client);
@@ -163,12 +163,12 @@ void OnClientCommand_Post(edict_t *edict, const CCommand &args)
 		{
 			return;
 		}
-	
+
 		if (DM_IsPlayerAlive(client))
 		{
 			return;
 		}
-	
+
 		if (!player->will_respawn_on_class)
 		{
 			return;

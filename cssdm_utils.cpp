@@ -67,8 +67,8 @@ CBaseEntity *DM_GetAndClearRagdoll(CBaseEntity *pEntity, int &serial)
 		return NULL;
 	}
 
-	unsigned char *ptr = (unsigned char *)pEntity + g_RagdollOffset;
-	CBaseHandle &ph = *(CBaseHandle *)ptr;
+	unsigned char *ptr = reinterpret_cast<unsigned char *>(pEntity) + g_RagdollOffset;
+	CBaseHandle &ph = *reinterpret_cast<CBaseHandle *>(ptr);
 
 	if (!ph.IsValid())
 	{
@@ -161,8 +161,8 @@ bool DM_IsPlayerAlive(int client)
 		return player->pInfo->IsDead() ? false : true;
 	}
 
-	unsigned char *ptr = (unsigned char *)(player->pEntity) + g_LifeStateOffset;
-	return (*(char *)ptr == LIFE_ALIVE);
+	unsigned char *ptr = reinterpret_cast<unsigned char *>(player->pEntity) + g_LifeStateOffset;
+	return (*reinterpret_cast<char *>(ptr) == LIFE_ALIVE);
 }
 
 bool DM_CheckSerial(edict_t *pEdict, int serial)
@@ -174,8 +174,8 @@ bool DM_CheckSerial(edict_t *pEdict, int serial)
 CBaseEntity *DM_GetWeaponFromSlot(CBaseEntity *pEntity, int slot)
 {
 	unsigned char vstk[sizeof(CBaseEntity *) + sizeof(int)];
-	*(CBaseEntity **)(&vstk[0]) = pEntity;
-	*(int *)(&vstk[sizeof(CBaseEntity *)]) = slot;
+	*reinterpret_cast<CBaseEntity **>(&vstk[0]) = pEntity;
+	*reinterpret_cast<int *>(&vstk[sizeof(CBaseEntity*)]) = slot;
 
 	CBaseEntity *pWeapon = NULL;
 
@@ -189,13 +189,13 @@ void DM_DropWeapon(CBaseEntity *pEntity, CBaseEntity *pWeapon)
 	unsigned char vstk[sizeof(CBaseEntity *) * 2 + sizeof(bool) * 2];
 	unsigned char *vptr = vstk;
 
-	*(CBaseEntity **)vptr = pEntity;
+	*reinterpret_cast<CBaseEntity **>(vptr) = pEntity;
 	vptr += sizeof(CBaseEntity *);
-	*(CBaseEntity **)vptr = pWeapon;
+	*reinterpret_cast<CBaseEntity **>(vptr) = pWeapon;
 	vptr += sizeof(CBaseEntity *);
-	*(bool *)vptr = true;
+	*reinterpret_cast<bool *>(vptr) = true;
 	vptr += sizeof(bool);
-	*(bool *)vptr = false;
+	*reinterpret_cast<bool *>(vptr) = false;
 	//vptr += sizeof(bool);
 
 	g_pDropWeapon->Execute(vstk, NULL);
@@ -206,9 +206,9 @@ void DM_RemoveAllItems(CBaseEntity *pEntity, bool removeSuit)
 	unsigned char vstk[sizeof(CBaseEntity *) + sizeof(bool)];
 	unsigned char *vptr = vstk;
 
-	*(CBaseEntity **)vptr = pEntity;
+	*reinterpret_cast<CBaseEntity **>(vptr) = pEntity;
 	vptr += sizeof(CBaseEntity *);
-	*(bool *)vptr = removeSuit;
+	*reinterpret_cast<bool *>(vptr) = removeSuit;
 	//vptr += sizeof(bool);
 
 	g_pRemoveAllItems->Execute(vstk, NULL);
@@ -221,7 +221,7 @@ void DM_SetDefuseKit(CBaseEntity *pEntity, bool defuseKit)
 		return;
 	}
 
-	*(bool *)((unsigned char *)pEntity + g_DefuserOffset) = defuseKit;
+	*reinterpret_cast<bool *>(reinterpret_cast<unsigned char *>(pEntity) + g_DefuserOffset) = defuseKit;
 }
 
 int DM_GiveAmmo(CBaseEntity *pEntity, int type, int count, bool noSound)
@@ -229,13 +229,13 @@ int DM_GiveAmmo(CBaseEntity *pEntity, int type, int count, bool noSound)
 	unsigned char vstk[sizeof(CBaseEntity *) + sizeof(int)*2 + sizeof(bool)];
 	unsigned char *vptr = vstk;
 
-	*(CBaseEntity **)vptr = pEntity;
+	*reinterpret_cast<CBaseEntity **>(vptr) = pEntity;
 	vptr += sizeof(CBaseEntity *);
-	*(int *)vptr = count;
+	*reinterpret_cast<int *>(vptr) = count;
 	vptr += sizeof(int);
-	*(int *)vptr = type;
+	*reinterpret_cast<int *>(vptr) = type;
 	vptr += sizeof(int);
-	*(bool *)vptr = noSound;
+	*reinterpret_cast<bool *>(vptr) = noSound;
 	//vptr += sizeof(bool);
 
 	int ret;
@@ -255,7 +255,7 @@ size_t DM_StringToBytes(const char *str, unsigned char buffer[], size_t maxlengt
 		{
 			break;
 		}
-		buffer[real_bytes++] = (unsigned char)str[i];
+		buffer[real_bytes++] = static_cast<unsigned char>(str[i]);
 		if (str[i] == '\\'
 			&& str[i+1] == 'x')
 		{
@@ -272,7 +272,7 @@ size_t DM_StringToBytes(const char *str, unsigned char buffer[], size_t maxlengt
 			/* Read it as an integer */
 			sscanf(s_byte, "%x", &r_byte);
 			/* Save the value */
-			buffer[real_bytes-1] = (unsigned char)r_byte;
+			buffer[real_bytes-1] = static_cast<unsigned char>(r_byte);
 			/* Adjust index */
 			i += 3;
 		}
