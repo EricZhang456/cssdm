@@ -24,6 +24,7 @@
  * Version: $Id$
  */
 
+#include <cstdint>
 #include "cssdm_headers.h"
 #include "cssdm_utils.h"
 #include "sm_platform.h"
@@ -175,7 +176,7 @@ bool DM_Prepare_FFA(char *error, size_t maxlength)
 		snprintf(error, maxlength, "Could not find g_pGameRules offset");
 		return false;
 	}
-	g_gamerules_addr = static_cast<void **>(*reinterpret_cast<void **>(static_cast<unsigned char *>(gamerules) + offset));
+	g_gamerules_addr = static_cast<void **>(*reinterpret_cast<void **>(reinterpret_cast<uintptr_t>(gamerules) + offset));
 #else
 	g_gamerules_addr = reinterpret_cast<void **>(gamerules);
 #endif

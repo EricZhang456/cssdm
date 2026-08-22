@@ -160,7 +160,7 @@
 			"g_pGameRules"
 			{
 				"windows"		"5"
-				"windows64"		"5"
+				"windows64"		"16"
 				"linux"			"1"
 				"linux64"		"1"
 			}
