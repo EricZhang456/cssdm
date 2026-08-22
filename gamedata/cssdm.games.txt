@@ -8,13 +8,13 @@
 		{
 			"LagCompPatch_Windows"		"\xEB"
 			"LagCompPatch_Linux"		"\x90\x90\x90\x90\x90\x90"
-			
+
 			"TakeDmgPatch1_Windows"		"\xEB"
 			"TakeDmgPatch1_Linux"		"\x90\x90\x90\x90\x90\x90"
-			
+
 			"TakeDmgPatch2_Windows"		"\xEB"
 			"TakeDmgPatch2_Linux"		"\x90\x90\x90\x90\x90\x90"
-			
+
 			"CalcDomRevPatch_Windows"	"\x90\x90\x90\x90\x90\x90"
 			"CalcDomRevPatch_Linux"		"\x90\x90"
 		}
@@ -128,12 +128,12 @@
 			"LagCompPatch_Windows64"	"\x90\x90"
 			"LagCompPatch_Linux"		"\x90\x90\x90\x90\x90\x90"
 			"LagCompPatch_Linux64"		"\x90\x90\x90\x90\x90\x90"
-			
+
 			"TakeDmgPatch1_Windows"		"\xEB"
 			"TakeDmgPatch1_Windows64"	"\xEB"
 			"TakeDmgPatch1_Linux"		"\xEB"
 			"TakeDmgPatch1_Linux64"		"\xEB"
-			
+
 			"CalcDomRevPatch_Windows"	"\x90\x90\x90\x90\x90\x90"
 			"CalcDomRevPatch_Windows64"	"\x90\x90\x90\x90\x90\x90"
 			"CalcDomRevPatch_Linux"		"\x90\x90\x90\x90\x90\x90"

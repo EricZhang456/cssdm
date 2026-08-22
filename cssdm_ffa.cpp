@@ -28,7 +28,6 @@
 #include "cssdm_utils.h"
 #include "sm_platform.h"
 #include "cssdm_includesdk.h"
-#include <CDetour/detourhelpers.h>
 
 SH_DECL_MANUALHOOK2(CGameRules_IPointsForKill, 62+EXTRA_VTBL_OFFSET, 0, 0, int, CBasePlayer *, CBasePlayer *);
 
@@ -54,20 +53,20 @@ void **g_gamerules_addr = NULL;
 /* Lagcomp */
 static int g_lagcomp_offset = 0;
 static void *g_lagcomp_addr = NULL;
-static patch_t g_lagcomp_patch;
-static patch_t g_lagcomp_restore;
+static dmpatch_t g_lagcomp_patch;
+static dmpatch_t g_lagcomp_restore;
 
 /* Takedamage */
 static int g_takedmg_offset[5] = {0};
 static void *g_takedmg_addr = NULL;
-static patch_t g_takedmg_patch[2];
-static patch_t g_takedmg_restore[2];
+static dmpatch_t g_takedmg_patch[2];
+static dmpatch_t g_takedmg_restore[2];
 
 /* Calc domination and revenge */
 static int g_domrev_offset = 0;
 static void *g_domrev_addr = NULL;
-static patch_t g_domrev_patch;
-static patch_t g_domrev_restore;
+static dmpatch_t g_domrev_patch;
+static dmpatch_t g_domrev_restore;
 
 int OnIPointsForKill(CBasePlayer *pl1, CBasePlayer *pl2)
 {
@@ -75,7 +74,7 @@ int OnIPointsForKill(CBasePlayer *pl1, CBasePlayer *pl2)
 	RETURN_META_VALUE(MRES_SUPERCEDE, 1);
 }
 
-bool DM_FFA_LoadPatch(const char *name, patch_t *patch, char *error, size_t maxlength)
+bool DM_FFA_LoadPatch(const char *name, dmpatch_t *patch, char *error, size_t maxlength)
 {
 	char fullname[255];
 	snprintf(fullname, sizeof(fullname), "%s_%s", name, PLATFORM_NAME);
