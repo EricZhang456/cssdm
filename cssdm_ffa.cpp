@@ -1,7 +1,7 @@
 /**
  * vim: set ts=4 :
  * ===============================================================
- * CS:S DM, Copyright (C) 2004-2007 AlliedModders LLC. 
+ * CS:S DM, Copyright (C) 2004-2007 AlliedModders LLC.
  * By David "BAILOPAN" Anderson
  * All rights reserved.
  * ===============================================================
@@ -10,20 +10,21 @@
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or (at
  * your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; see the file COPYING; if not, write to the
  * Free Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston,
  * MA 02110-1301 USA
- * 
+ *
  * Version: $Id$
  */
 
+#include <cstdint>
 #include "cssdm_headers.h"
 #include "cssdm_utils.h"
 #include "sm_platform.h"
@@ -31,12 +32,18 @@
 
 SH_DECL_MANUALHOOK2(CGameRules_IPointsForKill, 62+EXTRA_VTBL_OFFSET, 0, 0, int, CBasePlayer *, CBasePlayer *);
 
+#if defined PLATFORM_64BITS
+#define PLATFORM_ARCH_SUFFIX	"64"
+#else
+#define PLATFORM_ARCH_SUFFIX	""
+#endif
+
 #if defined PLATFORM_WINDOWS
-#define PLATFORM_NAME	"Windows"
+#define PLATFORM_NAME	"Windows" PLATFORM_ARCH_SUFFIX
 #elif defined PLATFORM_LINUX
-#define PLATFORM_NAME	"Linux"
+#define PLATFORM_NAME	"Linux" PLATFORM_ARCH_SUFFIX
 #elif defined __APPLE__
-#define PLATFORM_NAME	"Mac"
+#define PLATFORM_NAME	"Mac" PLATFORM_ARCH_SUFFIX
 #endif
 
 bool g_FFA_Patched = false;
@@ -113,7 +120,7 @@ bool DM_Prepare_FFA(char *error, size_t maxlength)
 		snprintf(error, maxlength, "Could not find \"CGameRules\" signature!");
 		return false;
 	}
-	
+
 	if (!g_pDmConf->GetOffset("LagCompPatch", &g_lagcomp_offset)
 		|| !g_lagcomp_offset)
 	{
@@ -169,7 +176,12 @@ bool DM_Prepare_FFA(char *error, size_t maxlength)
 		snprintf(error, maxlength, "Could not find g_pGameRules offset");
 		return false;
 	}
-	g_gamerules_addr = (void **)*(void **)((unsigned char *)gamerules + offset);
+#if !defined PLATFORM_64BITS
+	g_gamerules_addr = reinterpret_cast<void **>(*reinterpret_cast<void **>(reinterpret_cast<uintptr_t>(gamerules) + offset));
+#else
+	int32_t varOffset = *reinterpret_cast<int32_t *>(reinterpret_cast<uintptr_t>(gamerules) + offset);
+	g_gamerules_addr = reinterpret_cast<void **>(static_cast<unsigned char*>(gamerules) + offset + sizeof(int32_t) + varOffset);
+#endif
 #else
 	g_gamerules_addr = reinterpret_cast<void **>(gamerules);
 #endif

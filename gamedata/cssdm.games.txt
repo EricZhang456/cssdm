@@ -8,13 +8,13 @@
 		{
 			"LagCompPatch_Windows"		"\xEB"
 			"LagCompPatch_Linux"		"\x90\x90\x90\x90\x90\x90"
-			
+
 			"TakeDmgPatch1_Windows"		"\xEB"
 			"TakeDmgPatch1_Linux"		"\x90\x90\x90\x90\x90\x90"
-			
+
 			"TakeDmgPatch2_Windows"		"\xEB"
 			"TakeDmgPatch2_Linux"		"\x90\x90\x90\x90\x90\x90"
-			
+
 			"CalcDomRevPatch_Windows"	"\x90\x90\x90\x90\x90\x90"
 			"CalcDomRevPatch_Linux"		"\x90\x90"
 		}
@@ -64,16 +64,6 @@
 				"linux"			"279"
 			}
 			/* Next _two_ are detour byte "save" counts */
-			"DropWeaponsPatch"
-			{
-				"windows"		"6"
-				"linux"			"6"
-			}
-			"CSWeaponDropPatch"
-			{
-				"windows"		"6"
-				"linux"			"6"
-			}
 			"CalcDomRevPatch"
 			{
 				"windows"		"86"
@@ -82,12 +72,6 @@
 		}
 		"Signatures"
 		{
-			"UTIL_Remove"
-			{
-				"library"		"server"
-				"windows"		"\x55\x8B\xEC\x8B\x45\x2A\x85\xC0\x74\x2A\x83\xC0\x2A\x50"
-				"linux"			"@_Z11UTIL_RemoveP11CBaseEntity"
-			}
 			// win fcn.1043a0c0 12/25
 			"RoundRespawn"
 			{
@@ -141,13 +125,19 @@
 		"Keys"
 		{
 			"LagCompPatch_Windows"		"\x90\x90\x90\x90\x90\x90"
+			"LagCompPatch_Windows64"	"\x90\x90"
 			"LagCompPatch_Linux"		"\x90\x90\x90\x90\x90\x90"
-			
+			"LagCompPatch_Linux64"		"\x90\x90\x90\x90\x90\x90"
+
 			"TakeDmgPatch1_Windows"		"\xEB"
+			"TakeDmgPatch1_Windows64"	"\xEB"
 			"TakeDmgPatch1_Linux"		"\xEB"
-			
+			"TakeDmgPatch1_Linux64"		"\xEB"
+
 			"CalcDomRevPatch_Windows"	"\x90\x90\x90\x90\x90\x90"
+			"CalcDomRevPatch_Windows64"	"\x90\x90\x90\x90\x90\x90"
 			"CalcDomRevPatch_Linux"		"\x90\x90\x90\x90\x90\x90"
+			"CalcDomRevPatch_Linux64"	"\x90\x90\x90\x90\x90\x90"
 		}
 		"Offsets"
 		{
@@ -155,106 +145,120 @@
 			"LagCompPatch"
 			{
 				"windows"		"46"
+				"windows64"		"76"
 				"linux"			"25"
+				"linux64"		"558"
 			}
 			"TakeDmgPatch1"
 			{
 				"windows"		"844"
+				"windows64"		"1156"
 				"linux"			"504"
+				"linux64"		"495"
 			}
 			/* Offset into gamerules constructor - bogo value linux/mac */
 			"g_pGameRules"
 			{
 				"windows"		"5"
+				"windows64"		"16"
 				"linux"			"1"
+				"linux64"		"1"
 			}
 			/* Virtual indexes */
 			"IPointsForKill"
 			{
 				"windows"		"80"
+				"windows64"		"80"
 				"linux"			"81"
+				"linux64"		"81"
 			}
 			"Weapon_GetSlot"
 			{
 				"windows"		"274"
+				"windows64"		"274"
 				"linux"			"275"
+				"linux64"		"275"
 			}
 			"RemoveAllItems"
 			{
 				"windows"		"348"
+				"windows64"		"348"
 				"linux"			"349"
+				"linux64"		"349"
 			}
 			"GiveAmmo"
 			{
 				"windows"		"258"
+				"windows64"		"258"
 				"linux"			"259"
+				"linux64"		"259"
 			}
 			/* Next _two_ are detour byte "save" counts */
-			"DropWeaponsPatch"
-			{
-				"windows"		"6"
-				"linux"			"6"
-			}
-			"CSWeaponDropPatch"
-			{
-				"windows"		"9"
-				"linux"			"6"
-			}
 			"CalcDomRevPatch"
 			{
 				"windows"		"65"
+				"windows64"		"88"
 				"linux"			"72"
+				"linux64"		"90"
 			}
 		}
 		"Signatures"
 		{
-			"UTIL_Remove"
-			{
-				"library"		"server"
-				"windows"		"\x55\x8B\xEC\x56\x8B\x75\x08\x85\xF6\x74\x2A\x83\xC6\x0C"
-				"linux"			"@_Z11UTIL_RemoveP11CBaseEntity"
-			}
 			"RoundRespawn"
 			{
 				"library"	"server"
 				"windows"	"\x55\x8B\xEC\x51\x89\x4D\xFC\x8B\x45\xFC\x8B\x10"
+				"windows64"	"\x48\x89\x4C\x24\x08\x48\x83\xEC\x28\x48\x8B\x44\x24\x30\x48\x8B\x00\x48\x8B\x4C\x24\x30"
 				"linux"		"@_ZN9CCSPlayer12RoundRespawnEv"
+				"linux64"	"@_ZN9CCSPlayer12RoundRespawnEv"
 			}
 			"OnTakeDamage"
 			{
 				"library"		"server"
 				"windows"		"\x55\x8B\xEC\x81\xEC\x40\x01\x00\x00\x56\x89\x4D\xFC"
+				"windows64"		"\x48\x89\x54\x24\x10\x48\x89\x4C\x24\x08\x48\x81\xEC\x48\x02\x00\x00"
 				"linux"			"@_ZN9CCSPlayer12OnTakeDamageERK15CTakeDamageInfo"
+				"linux64"		"@_ZN9CCSPlayer12OnTakeDamageERK15CTakeDamageInfo"
 			}
 			"WantsLagComp"
 			{
 				"library"		"server"
 				"windows"		"\x55\x8B\xEC\x83\xEC\x10\xA1\x2A\x2A\x2A\x2A\x56"
+				"windows64"		"\x48\x89\x6C\x24\x10\x48\x89\x74\x24\x18\x48\x89\x7C\x24\x20\x41\x56\x48\x83\xEC\x50\x48\x8B\x05\x4C\x4B\x51\x00"
 				"linux"			"@_ZNK11CBasePlayer28WantsLagCompensationOnEntityEPKS_PK8CUserCmdPK7CBitVecILi2048EE"
+				"linux64"		"@_ZNK11CBasePlayer28WantsLagCompensationOnEntityEPKS_PK8CUserCmdPK7CBitVecILi2048EE"
 			}
 			"CGameRules"
 			{
 				"library"		"server"
 				"windows"		"\x55\x8B\xEC\x8B\x0D\x2A\x2A\x2A\x2A\x85\xC9\x74\x2A\x8B\x01\x6A\x01"
+				"windows64"		"\x48\x89\x5C\x24\x08\x57\x48\x83\xEC\x30\x48\x8B\xF9\x48\x8B\x0D\x94\x05\x59\x00"
 				"linux"			"@g_pGameRules"
+				"linux64"		"@g_pGameRules"
 			}
 			"CSWeaponDrop"
 			{
 				"library"		"server"
 				"windows"		"\x55\x8B\xEC\x81\xEC\x80\x01\x00\x00\x89\x4D\xFC"
+				"windows64"		"\x44\x88\x4C\x24\x20\x44\x88\x44\x24\x18\x48\x89\x54\x24\x10\x48\x89\x4C\x24\x08\x56"
 				"linux"			"@_ZN9CCSPlayer12CSWeaponDropEP17CBaseCombatWeaponbb"
+				"linux64"		"@_ZN9CCSPlayer12CSWeaponDropEP17CBaseCombatWeaponbb"
 			}
 			"DropWeapons"
 			{
 				"library"		"server"
 				"windows"		"\x55\x8B\xEC\x83\xEC\x58\x89\x4D\xF8"
+				"windows64"		"\x44\x88\x44\x24\x18\x88\x54\x24\x10\x48\x89\x4C\x24\x08\x48\x81\xEC\xC8\x00\x00\x00"
 				"linux"			"@_ZN9CCSPlayer11DropWeaponsEbb"
+				"linux64"		"@_ZN9CCSPlayer11DropWeaponsEbb"
 			}
 			"CalcDominationAndRevenge"
 			{
 				"library"		"server"
 				"windows"		"\x55\x8B\xEC\x51\xA1\x2A\x2A\x2A\x2A\x89\x4D\xFC"
+				"windows64"		"\x48\x89\x6C\x24\x18\x57\x41\x56\x41\x57\x48\x83\xEC\x30\x48\x8B\x05\xB3\xC0\x4B\x00"
 				"linux"			"@_ZN12CCSGameStats24CalcDominationAndRevengeEP9CCSPlayerS1_Pi"
+				"linux64"		"@_ZN12CCSGameStats24CalcDominationAndRevengeEP9CCSPlayerS1_Pi"
 			}
 		}
 	}
