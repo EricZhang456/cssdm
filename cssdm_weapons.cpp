@@ -24,16 +24,16 @@
  * Version: $Id$
  */
 
-#include <string.h>
+#include <cstring>
+#include <vector>
+#include <unordered_map>
 #include "cssdm_weapons.h"
 #include "cssdm_headers.h"
-#include <sm_trie_tpl.h>
-#include <sh_vector.h>
 
 using namespace SourceHook;
 
-KTrie<dm_weapon_t *> g_WeaponLookup;
-CVector<dm_weapon_t *> g_Weapons;
+std::unordered_map<std::string, dm_weapon_t> g_WeaponLookup;
+std::vector<dm_weapon_t> g_Weapons;
 
 char *DM_StringToLower(const char *str)
 {
@@ -52,34 +52,31 @@ char *DM_StringToLower(const char *str)
 	return ptr;
 }
 
-dm_weapon_t *DM_FindWeapon(const char *name)
+std::optional<dm_weapon_t> DM_FindWeapon(const char *name)
 {
-	dm_weapon_t **pWp;
-
-	if ((pWp = g_WeaponLookup.retrieve(name)) == NULL)
+	if (!name)
 	{
-		return NULL;
+		return std::nullopt;
 	}
 
-	return *pWp;
+	std::string key(name);
+	auto it = g_WeaponLookup.find(key);
+	if (it != g_WeaponLookup.end())
+	{
+		return std::nullopt;
+	}
+
+	return it->second;
 }
 
-dm_weapon_t *DM_GetWeapon(unsigned int index)
+std::optional<dm_weapon_t> DM_GetWeapon(unsigned int index)
 {
 	if (index >= g_Weapons.size())
 	{
-		return NULL;
+		return std::nullopt;
 	}
 
 	return g_Weapons[index];
-}
-
-char *DM_CopyString(const char *str)
-{
-	size_t length = strlen(str);
-	char *ptr = new char[length+1];
-	strcpy(ptr, str);
-	return ptr;
 }
 
 bool DM_ParseWeapons(char *error, size_t maxlength)
@@ -106,34 +103,34 @@ bool DM_ParseWeapons(char *error, size_t maxlength)
 
 	for (weapons = weapons->GetFirstTrueSubKey(); weapons != NULL; weapons = weapons->GetNextTrueSubKey())
 	{
-		dm_weapon_t *wp = new dm_weapon_t;
+		dm_weapon_t wp;
 
 		/* Deal with section name */
 		char name[64];
 		char *pName = DM_StringToLower(weapons->GetName());
 		snprintf(name, sizeof(name), "weapon_%s", pName);
-		wp->classname = DM_CopyString(name);
+		wp.classname = std::string(name);
 
 		/* Deal with other strings */
-		wp->display = DM_CopyString(weapons->GetString("name", pName));
+		wp.display = std::string(weapons->GetString("name", pName));
 
 		const char *type = weapons->GetString("type", "");
-		wp->type = WeaponType_Invalid;
+		wp.type = WeaponType::WeaponType_Invalid;
 		if (strcmp(type, "primary") == 0)
 		{
-			wp->type = WeaponType_Primary;
+			wp.type = WeaponType::WeaponType_Primary;
 		} else if (strcmp(type, "secondary") == 0) {
-			wp->type = WeaponType_Secondary;
+			wp.type = WeaponType::WeaponType_Secondary;
 		} else if (strcmp(type, "grenade") == 0) {
-			wp->type = WeaponType_Grenade;
+			wp.type = WeaponType::WeaponType_Grenade;
 		} else if (strcmp(type, "c4") == 0) {
-			wp->type = WeaponType_C4;
+			wp.type = WeaponType::WeaponType_C4;
 		}
 
-		if (wp->type != WeaponType_Invalid)
+		if (wp.type != WeaponType::WeaponType_Invalid)
 		{
-			wp->id = static_cast<int>(g_Weapons.size());
-			g_WeaponLookup.insert(pName, wp);
+			wp.id = static_cast<int>(g_Weapons.size());
+			g_WeaponLookup.insert({std::string(pName), wp});
 			g_Weapons.push_back(wp);
 		}
 	}
@@ -145,13 +142,7 @@ bool DM_ParseWeapons(char *error, size_t maxlength)
 
 void DM_FreeWeapons()
 {
-	for (size_t i=0; i<g_Weapons.size(); i++)
-	{
-		dm_weapon_t *wp = g_Weapons[i];
-		delete [] wp->classname;
-		delete [] wp->display;
-		delete wp;
-	}
 	g_Weapons.clear();
+	g_Weapons.shrink_to_fit();
 	g_WeaponLookup.clear();
 }
