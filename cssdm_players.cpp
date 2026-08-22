@@ -1,7 +1,7 @@
 /**
  * vim: set ts=4 :
  * ===============================================================
- * CS:S DM, Copyright (C) 2004-2007 AlliedModders LLC. 
+ * CS:S DM, Copyright (C) 2004-2007 AlliedModders LLC.
  * By David "BAILOPAN" Anderson
  * All rights reserved.
  * ===============================================================
@@ -10,17 +10,17 @@
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or (at
  * your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; see the file COPYING; if not, write to the
  * Free Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston,
  * MA 02110-1301 USA
- * 
+ *
  * Version: $Id$
  */
 
@@ -31,7 +31,7 @@
 #include "cssdm_includesdk.h"
 
 ClientListener g_ClientListener;
-dm_player_t g_players[65];
+dm_player_t g_players[SM_MAXPLAYERS];
 
 void DM_ResetPlayer(int client);
 void DM_ActivatePlayer(int client);
