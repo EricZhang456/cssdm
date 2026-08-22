@@ -171,6 +171,7 @@
 			"g_pGameRules"
 			{
 				"windows"		"5"
+				"windows64"		"5"
 				"linux"			"1"
 				"linux64"		"1"
 			}
@@ -178,24 +179,28 @@
 			"IPointsForKill"
 			{
 				"windows"		"80"
+				"windows64"		"80"
 				"linux"			"81"
 				"linux64"		"81"
 			}
 			"Weapon_GetSlot"
 			{
 				"windows"		"274"
+				"windows64"		"274"
 				"linux"			"275"
 				"linux64"		"275"
 			}
 			"RemoveAllItems"
 			{
 				"windows"		"348"
+				"windows64"		"348"
 				"linux"			"349"
 				"linux64"		"349"
 			}
 			"GiveAmmo"
 			{
 				"windows"		"258"
+				"windows64"		"258"
 				"linux"			"259"
 				"linux64"		"259"
 			}
@@ -203,12 +208,14 @@
 			"DropWeaponsPatch"
 			{
 				"windows"		"6"
+				"windows64"		"6"
 				"linux"			"6"
 				"linux64"		"6"
 			}
 			"CSWeaponDropPatch"
 			{
 				"windows"		"9"
+				"windows64"		"9"
 				"linux"			"6"
 				"linux64"		"6"
 			}

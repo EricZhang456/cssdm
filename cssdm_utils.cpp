@@ -1,7 +1,7 @@
 /**
  * vim: set ts=4 :
  * ===============================================================
- * CS:S DM, Copyright (C) 2004-2007 AlliedModders LLC. 
+ * CS:S DM, Copyright (C) 2004-2007 AlliedModders LLC.
  * By David "BAILOPAN" Anderson
  * All rights reserved.
  * ===============================================================
@@ -10,17 +10,17 @@
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or (at
  * your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; see the file COPYING; if not, write to the
  * Free Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston,
  * MA 02110-1301 USA
- * 
+ *
  * Version: $Id$
  */
 
@@ -281,30 +281,14 @@ size_t DM_StringToBytes(const char *str, unsigned char buffer[], size_t maxlengt
 	return real_bytes;
 }
 
-void DM_ApplyPatch(void *address, int offset, const dmpatch_t *patch, dmpatch_t *restore)
+void DM_ApplyPatch(void *address, int offset, const patch_t *patch, patch_t *restore)
 {
-	unsigned char *addr = (unsigned char *)address + offset;
-
-	SourceHook::SetMemAccess(addr, 20, SH_MEM_READ|SH_MEM_WRITE|SH_MEM_EXEC);
-
-	if (restore)
-	{
-		for (size_t i=0; i<patch->bytes; i++)
-		{
-			restore->patch[i] = addr[i];
-		}
-		restore->bytes = patch->bytes;
-	}
-
-	for (size_t i=0; i<patch->bytes; i++)
-	{
-		addr[i] = patch->patch[i];
-	}
+	ApplyPatch(address, offset, patch, restore);
 }
 
 void DM_SetMemPatchable(void *address, size_t size)
 {
-	SourceHook::SetMemAccess(address, (int)size, SH_MEM_READ|SH_MEM_WRITE|SH_MEM_EXEC);
+	SetMemPatchable(address, size);
 }
 
 #define GET_PROPERTY(cls, name, var) \
@@ -324,7 +308,7 @@ bool InitializeUtils(char *error, size_t maxlength)
 	g_pDmConf->GetMemSig("RoundRespawn", &addr);
 	g_pRoundRespawn = bintools->CreateCall(addr, CallConv_ThisCall, NULL, NULL, 0);
 	g_CallWrappers.push_back(g_pRoundRespawn);
-	
+
 	/** WEAPON_GETSLOT */
 	g_pDmConf->GetOffset("Weapon_GetSlot", &offset);
 	pass[0].flags = PASSFLAG_BYVAL;
