@@ -239,4 +239,9 @@
 	{
 		"en"	"Decoy Grenade"
 	}
+
+	"Random"
+	{
+		"en"	"Random"
+	}
 }
