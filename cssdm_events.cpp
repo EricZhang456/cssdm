@@ -401,7 +401,7 @@ IMPLEMENT_EVENT(item_pickup)
 		return;
 	}
 
-	CBaseEntity *pWeapon = DM_GetWeaponFromSlot(player->pEntity, static_cast<int>(WeaponType::WeaponType_C4));
+	CBaseEntity *pWeapon = DM_GetWeaponFromSlot(player->pEntity, (int)WeaponType_C4);
 	if (pWeapon)
 	{
 		DM_DropWeapon(player->pEntity, pWeapon);
