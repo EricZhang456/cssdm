@@ -104,6 +104,7 @@ public void OnPluginStart()
 	}
 
 	LoadTranslations("cssdm.phrases");
+	LoadTranslations("cssdm_weapons.phrases");
 
 	RegConsoleCmd("say", Command_Say);
 	RegConsoleCmd("say_team", Command_Say);
@@ -496,6 +497,13 @@ public int Menu_PrimaryHandler(Menu menu, MenuAction action, int param1, int par
 	{
 		return ITEMDRAW_DEFAULT;
 	}
+	else if (action == MenuAction_DisplayItem)
+	{
+		char display[128], translated[128];
+		menu.GetItem(param2, "", 0, _, display, sizeof(display));
+		Format(translated, sizeof(translated), "%T", display, param1);
+		return RedrawMenuItem(translated);
+	}
 	else if (action == MenuAction_Select)
 	{
 		GivePrimary(param1, param2);
@@ -523,6 +531,13 @@ public int Menu_SecondaryHandler(Menu menu, MenuAction action, int param1, int p
 	if (action == MenuAction_DrawItem)
 	{
 		return ITEMDRAW_DEFAULT;
+	}
+	else if (action == MenuAction_DisplayItem)
+	{
+		char display[128], translated[128];
+		menu.GetItem(param2, "", 0, _, display, sizeof(display));
+		Format(translated, sizeof(translated), "%T", display, param1);
+		return RedrawMenuItem(translated);
 	}
 	else if (action == MenuAction_Select)
 	{
@@ -871,7 +886,7 @@ bool LoadConfigFile(const char[] path)
 	{
 		delete g_hPrimaryMenu;
 	}
-	g_hPrimaryMenu = new Menu(Menu_PrimaryHandler, MenuAction_DrawItem|MenuAction_Display);
+	g_hPrimaryMenu = new Menu(Menu_PrimaryHandler, MenuAction_DrawItem|MenuAction_Display|MenuAction_DisplayItem);
 	g_hPrimaryMenu.SetTitle("Primary weapon:");
 	for (int i=0; i<g_PrimaryCount; i++)
 	{
@@ -886,7 +901,7 @@ bool LoadConfigFile(const char[] path)
 	{
 		delete g_hSecondaryMenu;
 	}
-	g_hSecondaryMenu = new Menu(Menu_SecondaryHandler, MenuAction_DrawItem|MenuAction_Display);
+	g_hSecondaryMenu = new Menu(Menu_SecondaryHandler, MenuAction_DrawItem|MenuAction_Display|MenuAction_DisplayItem);
 	g_hSecondaryMenu.SetTitle("Secondary weapon:");
 	for (int i=0; i<g_SecondaryCount; i++)
 	{

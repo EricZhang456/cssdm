@@ -80,4 +80,15 @@
 	{
 		"en"		"Secondary weapon"
 	}
+
+	"Welcome Version"
+	{
+		"#format"	"{1:s}"
+		"en"		"Counter-Strike Source: Deathmatch (version {1})"
+	}
+
+	"Welcome Download"
+	{
+		"en"		"Visit http://www.bailopan.net/cssdm to download."
+	}
 }

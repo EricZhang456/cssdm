@@ -31,6 +31,7 @@ ConVar cssdm_respawn_command;
 ConVar cssdm_force_mapchanges;
 ConVar cssdm_mapchange_file;
 ConVar cssdm_refill_ammo;
+ConVar cssdm_disable_welcome_msgs;
 ConVar mp_timelimit;
 Handle g_ChangeMapTimer = INVALID_HANDLE;
 bool g_AmmoHooks = false;
@@ -61,6 +62,7 @@ public void OnPluginStart()
 	cssdm_force_mapchanges = CreateConVar("cssdm_force_mapchanges", "0", "Sets whether CS:S DM should force mapchanges");
 	cssdm_mapchange_file = CreateConVar("cssdm_mapchange_file", "mapcycle.txt", "Sets the mapchange file for CS:S DM");
 	cssdm_refill_ammo = CreateConVar("cssdm_refill_ammo", "1", "Sets whether CS:S DM automatically refills ammo");
+	cssdm_disable_welcome_msgs = CreateConVar("cssdm_disable_welcome_msgs", "0", "Sets whether CS:S DM should disable the welcome messages");
 	mp_timelimit = FindConVar("mp_timelimit");
 
 	cssdm_force_mapchanges.AddChangeHook(CvarChange_RestartMapTimer);
@@ -223,8 +225,8 @@ public Action Timer_Welcome(Handle timer, int userid)
 		return Plugin_Stop;
 	}
 
-	PrintToChat(client, "[CSSDM] Counter-Strike Source: Deathmatch (version %s)", CSSDM_VERSION);
-	PrintToChat(client, "[CSSDM] Visit http://www.bailopan.net/cssdm to download.");
+	PrintToChat(client, "[CSSDM] %t", "Welcome Version", CSSDM_VERSION);
+	PrintToChat(client, "[CSSDM] %t", "Welcome Download");
 
 	return Plugin_Stop;
 }
@@ -232,7 +234,10 @@ public Action Timer_Welcome(Handle timer, int userid)
 public void OnClientPutInServer(int client)
 {
 	g_DeathTimes[client] = 0.0;
-	CreateTimer(10.0, Timer_Welcome, GetClientUserId(client));
+	if (!cssdm_disable_welcome_msgs.BoolValue)
+	{
+		CreateTimer(10.0, Timer_Welcome, GetClientUserId(client));
+	}
 
 	g_bHasNoAmmoInClip1[client] = false;
 }
