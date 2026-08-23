@@ -1,5 +1,6 @@
 # vim: set ts=2 sw=2 tw=99 noet ft=python:
 import os
+import platform
 
 def ResolveEnvPath(env, folder):
 	if env in os.environ:
@@ -403,7 +404,8 @@ class ExtensionConfig(object):
 		self.sm_bin_root = Normalize(sm_bin_root)
 		spcomp_path = os.path.join(self.sm_bin_root, "addons", "sourcemod", "scripting", "spcomp" + exe_suffix)
 		spcomp64_path = os.path.join(self.sm_bin_root, "addons", "sourcemod", "scripting", "spcomp64" + exe_suffix)
-		if os.path.isfile(spcomp64_path):
+		is_64bit = platform.architecture()[0].lower() == "64bit"
+		if os.path.isfile(spcomp64_path) and is_64bit:
 			self.spcomp = Normalize(spcomp64_path)
 		elif os.path.isfile(spcomp_path):
 			self.spcomp = Normalize(spcomp_path)
