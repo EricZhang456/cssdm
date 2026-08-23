@@ -100,7 +100,7 @@ jobs:
         with:
           repository: alliedmodders/hl2sdk
           ref: css
-          path: hl2sdk/hl2sdk-css
+          path: hl2sdk-css
           submodules: recursive
 
       - name: Fetch CSGO HL2SDK
@@ -108,7 +108,7 @@ jobs:
         with:
           repository: alliedmodders/hl2sdk
           ref: csgo
-          path: hl2sdk/hl2sdk-csgo
+          path: hl2sdk-csgo
           submodules: recursive
 
       - name: Fetch SourceMod Binary (Linux)
@@ -138,7 +138,6 @@ jobs:
             -o build \
             --sm-path ./sourcemod \
             --mms-path ./mmsource \
-            --hl2sdk-root ./hl2sdk \
             --sm-bin-path ./sm_bin \
             --targets ${{ matrix.target.arch }} \
             --enable-optimize
@@ -153,7 +152,6 @@ jobs:
             -o build \
             --sm-path ./sourcemod \
             --mms-path ./mmsource \
-            --hl2sdk-root ./hl2sdk \
             --sm-bin-path ./sm_bin \
             --targets ${{ matrix.target.arch }} \
             --enable-optimize
