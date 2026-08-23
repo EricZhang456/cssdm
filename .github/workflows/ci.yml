@@ -127,10 +127,24 @@ jobs:
           Invoke-WebRequest -OutFile sm_bin.zip -Uri "https://www.sourcemod.net/latest.php?os=windows&version=${{ matrix.sm.label }}"
           Expand-Archive -Path sm_bin.zip -DestinationPath sm_bin
           Remove-Item -Path sm_bin.zip
-      
-      - name: ls
+
+      - name: Set environment variables (Linux)
+        if: matrix.target.os_name == 'linux'
         run: |
-          ls
+          echo "SOURCEMOD=$GITHUB_WORKSPACE/sourcemod" >> $GITHUB_ENV
+          echo "SOURCEMOD_BIN=$GITHUB_WORKSPACE/sm_bin" >> $GITHUB_ENV
+          echo "MMSOURCE=$GITHUB_WORKSPACE/mmsource" >> $GITHUB_ENV
+          echo "HL2SDKCSS=$GITHUB_WORKSPACE/hl2sdk-css" >> $GITHUB_ENV
+          echo "HL2SDKCSGO=$GITHUB_WORKSPACE/hl2sdk-csgo" >> $GITHUB_ENV
+
+      - name: Set environment variables (Windows)
+        if: matrix.target.os_name == 'windows'
+        run: |
+          echo "SOURCEMOD=$env:GITHUB_WORKSPACE/sourcemod" >> $env:GITHUB_ENV
+          echo "SOURCEMOD_BIN=$env:GITHUB_WORKSPACE/sm_bin" >> $env:GITHUB_ENV
+          echo "MMSOURCE=$env:GITHUB_WORKSPACE/mmsource" >> $env:GITHUB_ENV
+          echo "HL2SDKCSS=$env:GITHUB_WORKSPACE/hl2sdk-css" >> $env:GITHUB_ENV
+          echo "HL2SDKCSGO=$env:GITHUB_WORKSPACE/hl2sdk-csgo" >> $env:GITHUB_ENV
 
       - name: Build (Linux)
         if: matrix.target.os_name == 'linux'
@@ -140,9 +154,6 @@ jobs:
         run: |
           python3 ./configure.py \
             -o build \
-            --sm-path ./sourcemod \
-            --mms-path ./mmsource \
-            --sm-bin-path ./sm_bin \
             --targets ${{ matrix.target.arch }} \
             --enable-optimize
           cd build
@@ -154,9 +165,6 @@ jobs:
         run: |
           python ./configure.py \
             -o build \
-            --sm-path ./sourcemod \
-            --mms-path ./mmsource \
-            --sm-bin-path ./sm_bin \
             --targets ${{ matrix.target.arch }} \
             --enable-optimize
           cd build
