@@ -149,6 +149,10 @@ void RestartMapTimer()
 
 	if (cssdm_force_mapchanges.BoolValue)
 	{
+		if (mp_timelimit.IntValue <= 0)
+		{
+			return;
+		}
 		/* Find how much time is left in the map */
 		float seconds = (mp_timelimit.IntValue * 60.0) - GetGameTime();
 		g_ChangeMapTimer = CreateTimer(seconds, Timer_ChangeMap);
