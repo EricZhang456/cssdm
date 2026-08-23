@@ -59,6 +59,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v7
+        with:
+          submodules: recursive
 
       - name: Setup Python (Windows)
         if: matrix.target.os_name == 'windows'
@@ -83,6 +85,7 @@ jobs:
           repository: alliedmodders/sourcemod
           ref: ${{ matrix.sm.branch }}
           path: sourcemod
+          submodules: recursive
 
       - name: Fetch Metamod:Source
         uses: actions/checkout@v7
@@ -90,6 +93,7 @@ jobs:
           repository: alliedmodders/metamod-source
           ref: 1.12-dev
           path: mmsource
+          submodules: recursive
 
       - name: Fetch CSS HL2SDK
         uses: actions/checkout@v7
@@ -97,6 +101,7 @@ jobs:
           repository: alliedmodders/hl2sdk
           ref: css
           path: hl2sdk/hl2sdk-css
+          submodules: recursive
 
       - name: Fetch CSGO HL2SDK
         uses: actions/checkout@v7
@@ -104,6 +109,7 @@ jobs:
           repository: alliedmodders/hl2sdk
           ref: csgo
           path: hl2sdk/hl2sdk-csgo
+          submodules: recursive
 
       - name: Fetch SourceMod Binary (Linux)
         if: matrix.target.os_name == 'linux'
@@ -111,7 +117,7 @@ jobs:
           mkdir sm_bin
           wget -O sm_bin.tar.gz "https://www.sourcemod.net/latest.php?os=linux&version=${{ matrix.sm.label }}"
           cd sm_bin
-          tar xf sm_bin.tar.gz
+          tar xf ../sm_bin.tar.gz
           cd ..
           rm sm_bin.tar.gz
 
