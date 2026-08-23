@@ -29,7 +29,6 @@
 /* Plugin stuff */
 ConVar cssdm_respawn_command;
 ConVar cssdm_force_mapchanges;
-ConVar cssdm_mapchange_file;
 ConVar cssdm_refill_ammo;
 ConVar cssdm_disable_welcome_msgs;
 ConVar mp_timelimit;
@@ -60,7 +59,6 @@ public void OnPluginStart()
 
 	cssdm_respawn_command = CreateConVar("cssdm_respawn_command", "1", "Sets whether clients can manually respawn");
 	cssdm_force_mapchanges = CreateConVar("cssdm_force_mapchanges", "0", "Sets whether CS:S DM should force mapchanges");
-	cssdm_mapchange_file = CreateConVar("cssdm_mapchange_file", "mapcycle.txt", "Sets the mapchange file for CS:S DM");
 	cssdm_refill_ammo = CreateConVar("cssdm_refill_ammo", "1", "Sets whether CS:S DM automatically refills ammo");
 	cssdm_disable_welcome_msgs = CreateConVar("cssdm_disable_welcome_msgs", "0", "Sets whether CS:S DM should disable the welcome messages");
 	mp_timelimit = FindConVar("mp_timelimit");
@@ -161,57 +159,9 @@ public Action Timer_ChangeMap(Handle timer)
 {
 	g_ChangeMapTimer = INVALID_HANDLE;
 
-	char changefile[64];
-	cssdm_mapchange_file.GetString(changefile, sizeof(changefile));
-
-	File file = OpenFile(changefile, "rt");
-	if (!file)
-	{
-		LogError("[CSSDM] Could not open mapchange file \"%s\"", changefile);
-		return Plugin_Stop;
-	}
-
-	char curmap[64];
-	GetCurrentMap(curmap, sizeof(curmap));
-
-	char firstmap[64];
-	char lastmap[64];
-	char buffer[64];
-	bool matched = false;
-	while (!file.EndOfFile() && file.ReadLine(buffer, sizeof(buffer)))
-	{
-		TrimString(buffer);
-		if (buffer[0] == '\0' || (!IsCharAlpha(buffer[0]) && !IsCharNumeric(buffer[0])))
-		{
-			continue;
-		}
-		if (!IsMapValid(buffer))
-		{
-			continue;
-		}
-		if (firstmap[0] == '\0')
-		{
-			strcopy(firstmap, sizeof(firstmap), buffer);
-		}
-		strcopy(lastmap, sizeof(lastmap), buffer);
-		if (strcmp(buffer, curmap) == 0)
-		{
-			matched = true;
-		} else if (matched) {
-			break;
-		}
-	}
-	delete file;
-
-	if (!matched || StrEqual(buffer, curmap))
-	{
-		strcopy(lastmap, sizeof(lastmap), firstmap);
-	}
-
-	if (lastmap[0] != '\0')
-	{
-		ServerCommand("changelevel %s", lastmap);
-	}
+	char nextmap[PLATFORM_MAX_PATH];
+	GetNextMap(nextmap, sizeof(nextmap));
+	ForceChangeLevel(nextmap, "Switching map due to cssdm_force_mapchanges");
 
 	return Plugin_Stop;
 }
