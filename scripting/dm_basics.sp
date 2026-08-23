@@ -160,7 +160,10 @@ public Action Timer_ChangeMap(Handle timer)
 	g_ChangeMapTimer = INVALID_HANDLE;
 
 	char nextmap[PLATFORM_MAX_PATH];
-	GetNextMap(nextmap, sizeof(nextmap));
+	if (!GetNextMap(nextmap, sizeof(nextmap)))
+	{
+		return Plugin_Stop;
+	}
 	ForceChangeLevel(nextmap, "Switching map due to cssdm_force_mapchanges");
 
 	return Plugin_Stop;
