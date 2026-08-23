@@ -216,6 +216,13 @@ jobs:
                 asset="cssdm-${version}-sm${label}-windows.zip"
                 (cd "package-sm${label}-${os_name}" && zip -r "../${asset}" *)
               else
+                # fix permissions of the dlls first
+                pushd "package-sm${label}-${os_name}"/addons/sourcemod/extensions
+                chmod +x *.so
+                pushd x64
+                chmod +x *.so
+                popd
+                popd
                 asset="cssdm-${version}-sm${label}-linux.tar.gz"
                 (cd "package-sm${label}-${os_name}" && tar -czf "../${asset}" .)
               fi
