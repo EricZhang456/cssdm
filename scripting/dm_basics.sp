@@ -40,6 +40,8 @@ int g_ActiveWepOffs = -1;
 float g_DeathTimes[MAXPLAYERS+1];
 bool g_bHasNoAmmoInClip1[MAXPLAYERS+1] = {false,...};
 
+Handle g_IntermissionSDKCall;
+
 /** PUBLIC INFO */
 public Plugin myinfo =
 {
@@ -68,6 +70,22 @@ public void OnPluginStart()
 	cssdm_refill_ammo.AddChangeHook(CvarChange_RefillAmmo);
 
 	g_ActiveWepOffs = FindSendPropInfo("CCSPlayer", "m_hActiveWeapon");
+
+	GameData gamedata = new GameData("cssdm.games");
+	if (gamedata == null)
+	{
+		SetFailState("Cannot load CSSDM gamedata.");
+	}
+
+	StartPrepSDKCall(SDKCall_GameRules);
+	if (!PrepSDKCall_SetFromConf(gamedata, SDKConf_Virtual, "GoToIntermission"))
+	{
+		delete gamedata;
+		SetFailState("Cannot find GoToIntermission offset.");
+	}
+	g_IntermissionSDKCall = EndPrepSDKCall();
+
+	delete gamedata;
 }
 
 public void DM_OnStartup()
@@ -147,7 +165,7 @@ void RestartMapTimer()
 		g_ChangeMapTimer = INVALID_HANDLE;
 	}
 
-	if (cssdm_force_mapchanges.BoolValue)
+	if (cssdm_force_mapchanges.IntValue >= 1)
 	{
 		if (mp_timelimit.IntValue <= 0)
 		{
@@ -163,12 +181,19 @@ public Action Timer_ChangeMap(Handle timer)
 {
 	g_ChangeMapTimer = INVALID_HANDLE;
 
-	char nextmap[PLATFORM_MAX_PATH];
-	if (!GetNextMap(nextmap, sizeof(nextmap)))
+	if (cssdm_force_mapchanges.IntValue != 2)
 	{
-		return Plugin_Stop;
+		char nextmap[PLATFORM_MAX_PATH];
+		if (!GetNextMap(nextmap, sizeof(nextmap)))
+		{
+			return Plugin_Stop;
+		}
+		ForceChangeLevel(nextmap, "Switching map due to cssdm_force_mapchanges");
 	}
-	ForceChangeLevel(nextmap, "Switching map due to cssdm_force_mapchanges");
+	else
+	{
+		SDKCall(g_IntermissionSDKCall);
+	}
 
 	return Plugin_Stop;
 }

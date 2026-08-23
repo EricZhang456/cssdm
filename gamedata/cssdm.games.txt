@@ -193,6 +193,13 @@
 				"linux"			"259"
 				"linux64"		"259"
 			}
+			"GoToIntermission"
+			{
+				"windows"		"156"
+				"windows64"		"156"
+				"linux"			"157"
+				"linux64"		"157"
+			}
 			/* Next _two_ are detour byte "save" counts */
 			"CalcDomRevPatch"
 			{
