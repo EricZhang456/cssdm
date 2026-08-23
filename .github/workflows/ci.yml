@@ -217,7 +217,7 @@ jobs:
                 (cd "package-sm${label}-${os_name}" && zip -r "../${asset}" *)
               else
                 asset="cssdm-${version}-sm${label}-linux.tar.gz"
-                tar -czf "${asset}" -C "package-sm${label}-${os_name}" *
+                (cd "package-sm${label}-${os_name}" && tar -czf "../${asset}" .)
               fi
               assets="${assets} ${asset}"
             done
