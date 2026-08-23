@@ -127,6 +127,10 @@ jobs:
           Invoke-WebRequest -OutFile sm_bin.zip -Uri "https://www.sourcemod.net/latest.php?os=windows&version=${{ matrix.sm.label }}"
           Expand-Archive -Path sm_bin.zip -DestinationPath sm_bin
           Remove-Item -Path sm_bin.zip
+      
+      - name: ls
+        run: |
+          ls
 
       - name: Build (Linux)
         if: matrix.target.os_name == 'linux'
