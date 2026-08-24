@@ -24,6 +24,7 @@
  * Version: $Id$
  */
 
+#include <cstdio>
 #include <cstring>
 #include "cssdm_headers.h"
 #include "cssdm_config.h"
@@ -47,7 +48,7 @@ void GetMapDisplayName(const char* mapName, char* mapDisplay, size_t maxLen)
 #if WIN32
 	strcpy_s(mapDisplay, maxLen, mapName);
 #else
-	strlcpy(mapDisplay, mapName, maxLen);
+	snprintf(mapDisplay, maxLen, "%s", mapName);
 #endif
 
 	char* pos;
@@ -56,7 +57,7 @@ void GetMapDisplayName(const char* mapName, char* mapDisplay, size_t maxLen)
 #if WIN32
 		strcpy_s(mapDisplay, maxLen, &pos[1]);
 #else
-		strlcpy(mapDisplay, &pos[1], maxLen);
+		snprintf(mapDisplay, maxLen, "%s", &pos[1]);
 #endif
 	}
 
