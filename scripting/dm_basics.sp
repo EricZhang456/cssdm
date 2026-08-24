@@ -29,7 +29,6 @@
 /* Plugin stuff */
 ConVar cssdm_respawn_command;
 ConVar cssdm_force_mapchanges;
-ConVar cssdm_mapchange_file;
 ConVar cssdm_refill_ammo;
 ConVar cssdm_disable_welcome_msgs;
 ConVar mp_timelimit;
@@ -40,6 +39,8 @@ int g_ActiveWepOffs = -1;
 /* Player stuff */
 float g_DeathTimes[MAXPLAYERS+1];
 bool g_bHasNoAmmoInClip1[MAXPLAYERS+1] = {false,...};
+
+Handle g_IntermissionSDKCall;
 
 /** PUBLIC INFO */
 public Plugin myinfo =
@@ -60,7 +61,6 @@ public void OnPluginStart()
 
 	cssdm_respawn_command = CreateConVar("cssdm_respawn_command", "1", "Sets whether clients can manually respawn");
 	cssdm_force_mapchanges = CreateConVar("cssdm_force_mapchanges", "0", "Sets whether CS:S DM should force mapchanges");
-	cssdm_mapchange_file = CreateConVar("cssdm_mapchange_file", "mapcycle.txt", "Sets the mapchange file for CS:S DM");
 	cssdm_refill_ammo = CreateConVar("cssdm_refill_ammo", "1", "Sets whether CS:S DM automatically refills ammo");
 	cssdm_disable_welcome_msgs = CreateConVar("cssdm_disable_welcome_msgs", "0", "Sets whether CS:S DM should disable the welcome messages");
 	mp_timelimit = FindConVar("mp_timelimit");
@@ -70,6 +70,22 @@ public void OnPluginStart()
 	cssdm_refill_ammo.AddChangeHook(CvarChange_RefillAmmo);
 
 	g_ActiveWepOffs = FindSendPropInfo("CCSPlayer", "m_hActiveWeapon");
+
+	GameData gamedata = new GameData("cssdm.games");
+	if (gamedata == null)
+	{
+		SetFailState("Cannot load CSSDM gamedata.");
+	}
+
+	StartPrepSDKCall(SDKCall_GameRules);
+	if (!PrepSDKCall_SetFromConf(gamedata, SDKConf_Virtual, "GoToIntermission"))
+	{
+		delete gamedata;
+		SetFailState("Cannot find GoToIntermission offset.");
+	}
+	g_IntermissionSDKCall = EndPrepSDKCall();
+
+	delete gamedata;
 }
 
 public void DM_OnStartup()
@@ -149,8 +165,12 @@ void RestartMapTimer()
 		g_ChangeMapTimer = INVALID_HANDLE;
 	}
 
-	if (cssdm_force_mapchanges.BoolValue)
+	if (cssdm_force_mapchanges.IntValue >= 1)
 	{
+		if (mp_timelimit.IntValue <= 0)
+		{
+			return;
+		}
 		/* Find how much time is left in the map */
 		float seconds = (mp_timelimit.IntValue * 60.0) - GetGameTime();
 		g_ChangeMapTimer = CreateTimer(seconds, Timer_ChangeMap);
@@ -161,56 +181,18 @@ public Action Timer_ChangeMap(Handle timer)
 {
 	g_ChangeMapTimer = INVALID_HANDLE;
 
-	char changefile[64];
-	cssdm_mapchange_file.GetString(changefile, sizeof(changefile));
-
-	File file = OpenFile(changefile, "rt");
-	if (!file)
+	if (cssdm_force_mapchanges.IntValue != 2)
 	{
-		LogError("[CSSDM] Could not open mapchange file \"%s\"", changefile);
-		return Plugin_Stop;
+		char nextmap[PLATFORM_MAX_PATH];
+		if (!GetNextMap(nextmap, sizeof(nextmap)))
+		{
+			return Plugin_Stop;
+		}
+		ForceChangeLevel(nextmap, "Switching map due to cssdm_force_mapchanges");
 	}
-
-	char curmap[64];
-	GetCurrentMap(curmap, sizeof(curmap));
-
-	char firstmap[64];
-	char lastmap[64];
-	char buffer[64];
-	bool matched = false;
-	while (!file.EndOfFile() && file.ReadLine(buffer, sizeof(buffer)))
+	else
 	{
-		TrimString(buffer);
-		if (buffer[0] == '\0' || (!IsCharAlpha(buffer[0]) && !IsCharNumeric(buffer[0])))
-		{
-			continue;
-		}
-		if (!IsMapValid(buffer))
-		{
-			continue;
-		}
-		if (firstmap[0] == '\0')
-		{
-			strcopy(firstmap, sizeof(firstmap), buffer);
-		}
-		strcopy(lastmap, sizeof(lastmap), buffer);
-		if (strcmp(buffer, curmap) == 0)
-		{
-			matched = true;
-		} else if (matched) {
-			break;
-		}
-	}
-	delete file;
-
-	if (!matched || StrEqual(buffer, curmap))
-	{
-		strcopy(lastmap, sizeof(lastmap), firstmap);
-	}
-
-	if (lastmap[0] != '\0')
-	{
-		ServerCommand("changelevel %s", lastmap);
+		SDKCall(g_IntermissionSDKCall);
 	}
 
 	return Plugin_Stop;
