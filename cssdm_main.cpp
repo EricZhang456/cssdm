@@ -155,7 +155,6 @@ bool Startup(char *error, size_t maxlength)
 	HOOK_EVENT2(round_start);
 	HOOK_EVENT2(round_end);
 	HOOK_EVENT2(server_shutdown);
-	HOOK_EVENT2(item_pickup);
 
 	g_Startup = true;
 
@@ -188,7 +187,6 @@ void Shutdown()
 	UNHOOK_EVENT2(round_start);
 	UNHOOK_EVENT2(round_end);
 	UNHOOK_EVENT2(server_shutdown);
-	UNHOOK_EVENT2(item_pickup);
 
 	/* If we were never started up, the rest of this is invalid */
 	if (!g_Startup)
