@@ -184,23 +184,6 @@ CBaseEntity *DM_GetWeaponFromSlot(CBaseEntity *pEntity, int slot)
 	return pWeapon;
 }
 
-void DM_DropWeapon(CBaseEntity *pEntity, CBaseEntity *pWeapon)
-{
-	unsigned char vstk[sizeof(CBaseEntity *) * 2 + sizeof(bool) * 2];
-	unsigned char *vptr = vstk;
-
-	*reinterpret_cast<CBaseEntity **>(vptr) = pEntity;
-	vptr += sizeof(CBaseEntity *);
-	*reinterpret_cast<CBaseEntity **>(vptr) = pWeapon;
-	vptr += sizeof(CBaseEntity *);
-	*reinterpret_cast<bool *>(vptr) = true;
-	vptr += sizeof(bool);
-	*reinterpret_cast<bool *>(vptr) = false;
-	//vptr += sizeof(bool);
-
-	g_pDropWeapon->Execute(vstk, NULL);
-}
-
 void DM_RemoveAllItems(CBaseEntity *pEntity, bool removeSuit)
 {
 	unsigned char vstk[sizeof(CBaseEntity *) + sizeof(bool)];

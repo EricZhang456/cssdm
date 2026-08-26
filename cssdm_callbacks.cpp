@@ -202,30 +202,6 @@ static cell_t DMN_GetClientWeapon(IPluginContext *pContext, const cell_t *params
 	return gamehelpers->IndexOfEdict(pEdict);
 }
 
-static cell_t DMN_DropWeapon(IPluginContext *pContext, const cell_t *params)
-{
-	if (params[1] < 1 || params[1] > gpGlobals->maxClients)
-	{
-		return pContext->ThrowNativeError("Invalid client index %d", params[1]);
-	}
-
-	dm_player_t *player = DM_GetPlayer(params[1]);
-	if (!player->pEntity)
-	{
-		return pContext->ThrowNativeError("Client %d is not in game", params[1]);
-	}
-
-	CBaseEntity *pWeapon = DM_GetBaseEntity(params[2]);
-	if (!pWeapon)
-	{
-		return pContext->ThrowNativeError("Entity %d is not a valid entity", params[2]);
-	}
-
-	DM_DropWeapon(player->pEntity, pWeapon);
-
-	return 1;
-}
-
 static cell_t DMN_IsRunning(IPluginContext *pContext, const cell_t *params)
 {
 	return g_IsRunning ? true : false;
@@ -297,7 +273,6 @@ sp_nativeinfo_t g_BaseNatives[] =
 	{"DM_StripBotItems",		DMN_StripBotItems},
 	{"DM_GetWeaponClassname",	DMN_GetWeaponClassname},
 	{"DM_GetClientWeapon",		DMN_GetClientWeapon},
-	{"DM_DropWeapon",			DMN_DropWeapon},
 	{"DM_GetWeaponName",		DMN_GetWeaponName},
 	{"DM_IsRunning",			DMN_IsRunning},
 	{"DM_GetSpawnWaitTime",		DMN_GetSpawnWaitTime},
