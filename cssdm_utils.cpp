@@ -319,15 +319,6 @@ bool InitializeUtils(char *error, size_t maxlength)
 	g_pWeaponGetSlot = bintools->CreateVCall(offset, 0, 0, &pass[1], &pass[0], 1);
 	g_CallWrappers.push_back(g_pWeaponGetSlot);
 
-	/** CSWEAPONDROP */
-	g_pDmConf->GetMemSig("CSWeaponDrop", &addr);
-	pass[0].flags = pass[1].flags = pass[2].flags  = PASSFLAG_BYVAL;
-	pass[0].type = pass[1].type = pass[2].type = PassType_Basic;
-	pass[0].size = sizeof(CBaseEntity *);
-	pass[1].size = pass[2].size = sizeof(bool);
-	g_pDropWeapon = bintools->CreateCall(addr, CallConv_ThisCall, NULL, pass, 3);
-	g_CallWrappers.push_back(g_pDropWeapon);
-
 	/** REMOVEALLITEMS */
 	g_pDmConf->GetOffset("RemoveAllItems", &offset);
 	pass[0].flags = PASSFLAG_BYVAL;
