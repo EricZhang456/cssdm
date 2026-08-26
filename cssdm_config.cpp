@@ -38,7 +38,6 @@ static void ChangeSpawnStatus(IConVar *cvar, const char *value, float flOldValue
 
 ConVar cssdm_ragdoll_time("cssdm_ragdoll_time", "2", 0, "Sets ragdoll stay time", true, 0.0, true, 20.0);
 ConVar cssdm_respawn_wait("cssdm_respawn_wait", "0.75", 0, "Sets respawn wait time");
-ConVar cssdm_allow_c4("cssdm_allow_c4", "0", 0, "Sets whether C4 is allowed");
 ConVar cssdm_version("cssdm_version", CSSDM_FULL_VERSION, FCVAR_NOTIFY, "CS:S DM Version");
 ConVar cssdm_enabled("cssdm_enabled", 
 					 "1", 
@@ -58,7 +57,6 @@ ConVar cssdm_spawn_method("cssdm_spawn_method",
 						  "Sets how and where players are spawned",
 						  false, 0.0f, false, 0.0f,
 						  ChangeSpawnStatus);
-ConVar cssdm_remove_drops("cssdm_remove_drops", "1", 0, "Sets whether dropped items are removed");
 
 class LinkConVars : public IConCommandBaseAccessor
 {
@@ -120,11 +118,6 @@ float DM_GetRespawnWait()
 	return cssdm_respawn_wait.GetFloat();
 }
 
-bool DM_AllowC4()
-{
-	return (cssdm_allow_c4.GetInt() != 0);
-}
-
 bool DM_IsEnabled()
 {
 	return (cssdm_enabled.GetInt() != 0);
@@ -133,9 +126,4 @@ bool DM_IsEnabled()
 bool DM_IsFFAEnabled()
 {
 	return (cssdm_ffa_enabled.GetInt() != 0);
-}
-
-bool DM_ShouldRemoveDrops()
-{
-	return (cssdm_remove_drops.GetInt() != 0);
 }
