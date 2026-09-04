@@ -73,6 +73,8 @@ public void OnPluginStart()
 
 	HookEvent("item_pickup", Event_ItemPickup);
 
+	AddCommandListener(Cmd_WeaponDrop, "drop");
+
 	g_ActiveWepOffs = FindSendPropInfo("CCSPlayer", "m_hActiveWeapon");
 
 	GameData gamedata = new GameData("cssdm.games");
@@ -200,6 +202,15 @@ public void Event_ItemPickup(Event event, const char[] name, bool dontBroadcast)
 	{
 		DM_DropWeapon(client, c4Ent);
 	}
+}
+
+public Action Cmd_WeaponDrop(int client, const char[] command, int argc)
+{
+	if (client <= 0 || !(DM_IsRunning() && cssdm_remove_drops.BoolValue))
+	{
+		return Plugin_Continue;
+	}
+	return Plugin_Handled;
 }
 
 public void CvarChange_RestartMapTimer(ConVar cvar, const char[] oldvalue, const char[] newvalue)
