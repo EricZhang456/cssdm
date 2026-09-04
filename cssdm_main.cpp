@@ -94,7 +94,6 @@ bool Deathmatch::SDK_OnLoad(char *error, size_t maxlength, bool late)
 	void *addr;
 	int offset;
 	VERIFY_SIGNATURE("RoundRespawn");
-	VERIFY_SIGNATURE("CSWeaponDrop");
 	VERIFY_SIGNATURE("DropWeapons");
 	VERIFY_OFFSET("Weapon_GetSlot");
 	VERIFY_OFFSET("RemoveAllItems");
