@@ -155,7 +155,11 @@ native int DM_GetClientWeapon(int client, DmWeaponType type);
  * @noreturn
  * @error				Client index invalid or not in game; weapon entity invalid.
  */
-native void DM_DropWeapon(int client, int entity);
+stock void DM_DropWeapon(int client, int entity)
+{
+	CS_DropWeapon(client, entity, true);
+	AcceptEntityInput(entity, "Kill");
+}
 
 /**
  * Strips all items from a bot, excluding their player suit.

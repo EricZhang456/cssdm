@@ -36,7 +36,6 @@ using namespace SourceHook;
 List<ICallWrapper *> g_CallWrappers;
 ICallWrapper *g_pRoundRespawn = NULL;
 ICallWrapper *g_pWeaponGetSlot = NULL;
-ICallWrapper *g_pDropWeapon = NULL;
 ICallWrapper *g_pRemoveAllItems = NULL;
 ICallWrapper *g_pGiveAmmo = NULL;
 int g_RagdollOffset = 0;
@@ -184,23 +183,6 @@ CBaseEntity *DM_GetWeaponFromSlot(CBaseEntity *pEntity, int slot)
 	return pWeapon;
 }
 
-void DM_DropWeapon(CBaseEntity *pEntity, CBaseEntity *pWeapon)
-{
-	unsigned char vstk[sizeof(CBaseEntity *) * 2 + sizeof(bool) * 2];
-	unsigned char *vptr = vstk;
-
-	*reinterpret_cast<CBaseEntity **>(vptr) = pEntity;
-	vptr += sizeof(CBaseEntity *);
-	*reinterpret_cast<CBaseEntity **>(vptr) = pWeapon;
-	vptr += sizeof(CBaseEntity *);
-	*reinterpret_cast<bool *>(vptr) = true;
-	vptr += sizeof(bool);
-	*reinterpret_cast<bool *>(vptr) = false;
-	//vptr += sizeof(bool);
-
-	g_pDropWeapon->Execute(vstk, NULL);
-}
-
 void DM_RemoveAllItems(CBaseEntity *pEntity, bool removeSuit)
 {
 	unsigned char vstk[sizeof(CBaseEntity *) + sizeof(bool)];
@@ -335,15 +317,6 @@ bool InitializeUtils(char *error, size_t maxlength)
 	pass[1].type = PassType_Basic;
 	g_pWeaponGetSlot = bintools->CreateVCall(offset, 0, 0, &pass[1], &pass[0], 1);
 	g_CallWrappers.push_back(g_pWeaponGetSlot);
-
-	/** CSWEAPONDROP */
-	g_pDmConf->GetMemSig("CSWeaponDrop", &addr);
-	pass[0].flags = pass[1].flags = pass[2].flags  = PASSFLAG_BYVAL;
-	pass[0].type = pass[1].type = pass[2].type = PassType_Basic;
-	pass[0].size = sizeof(CBaseEntity *);
-	pass[1].size = pass[2].size = sizeof(bool);
-	g_pDropWeapon = bintools->CreateCall(addr, CallConv_ThisCall, NULL, pass, 3);
-	g_CallWrappers.push_back(g_pDropWeapon);
 
 	/** REMOVEALLITEMS */
 	g_pDmConf->GetOffset("RemoveAllItems", &offset);
