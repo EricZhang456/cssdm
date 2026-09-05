@@ -163,6 +163,27 @@ stock int DM_GetClientWeapon(int client, DmWeaponType type)
  */
 stock void DM_DropWeapon(int client, int entity)
 {
+	if (client <= 0 || client > MaxClients)
+	{
+		ThrowError("Invalid client index %d", client);
+	}
+
+	if (!IsClientInGame(client))
+	{
+		ThrowError("Client %d is not in game", client);
+	}
+
+	if (!IsValidEntity(entity))
+	{
+		ThrowError("Entity %d is not a valid entity", entity);
+	}
+
+	int owner = GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity");
+	if (client != owner)
+	{
+		return;
+	}
+
 	CS_DropWeapon(client, entity, true);
 	AcceptEntityInput(entity, "Kill");
 }
