@@ -25,6 +25,9 @@
 #define CSSDM_TEAM_T			2
 #define CSSDM_TEAM_CT			3
 
+#include <sdktools>
+#include <cstrike>
+
 enum DmWeaponType
 {
 	DmWeapon_Invalid = -1,
