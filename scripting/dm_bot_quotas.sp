@@ -67,7 +67,7 @@ void BalanceBots(int quota)
 		return;
 	}
 
-	int humans, bots;
+	int humans;
 
 	/* Get the number of valid humans and bots */
 	for (int i=1; i<=MaxClients; i++)
@@ -79,8 +79,6 @@ void BalanceBots(int quota)
 		if (!IsFakeClient(i))
 		{
 			humans++;
-		} else {
-			bots++;
 		}
 	}
 
