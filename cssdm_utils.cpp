@@ -35,7 +35,6 @@ using namespace SourceHook;
 
 List<ICallWrapper *> g_CallWrappers;
 ICallWrapper *g_pRoundRespawn = NULL;
-ICallWrapper *g_pWeaponGetSlot = NULL;
 ICallWrapper *g_pRemoveAllItems = NULL;
 ICallWrapper *g_pGiveAmmo = NULL;
 int g_RagdollOffset = 0;
@@ -170,19 +169,6 @@ bool DM_CheckSerial(edict_t *pEdict, int serial)
 	return (pEdict->m_NetworkSerialNumber == new_serial);
 }
 
-CBaseEntity *DM_GetWeaponFromSlot(CBaseEntity *pEntity, int slot)
-{
-	unsigned char vstk[sizeof(CBaseEntity *) + sizeof(int)];
-	*reinterpret_cast<CBaseEntity **>(&vstk[0]) = pEntity;
-	*reinterpret_cast<int *>(&vstk[sizeof(CBaseEntity*)]) = slot;
-
-	CBaseEntity *pWeapon = NULL;
-
-	g_pWeaponGetSlot->Execute(vstk, &pWeapon);
-
-	return pWeapon;
-}
-
 void DM_RemoveAllItems(CBaseEntity *pEntity, bool removeSuit)
 {
 	unsigned char vstk[sizeof(CBaseEntity *) + sizeof(bool)];
@@ -306,17 +292,6 @@ bool InitializeUtils(char *error, size_t maxlength)
 	g_pDmConf->GetMemSig("RoundRespawn", &addr);
 	g_pRoundRespawn = bintools->CreateCall(addr, CallConv_ThisCall, NULL, NULL, 0);
 	g_CallWrappers.push_back(g_pRoundRespawn);
-
-	/** WEAPON_GETSLOT */
-	g_pDmConf->GetOffset("Weapon_GetSlot", &offset);
-	pass[0].flags = PASSFLAG_BYVAL;
-	pass[0].size = sizeof(int);
-	pass[0].type = PassType_Basic;
-	pass[1].flags = PASSFLAG_BYVAL;
-	pass[1].size = sizeof(CBaseEntity *);
-	pass[1].type = PassType_Basic;
-	g_pWeaponGetSlot = bintools->CreateVCall(offset, 0, 0, &pass[1], &pass[0], 1);
-	g_CallWrappers.push_back(g_pWeaponGetSlot);
 
 	/** REMOVEALLITEMS */
 	g_pDmConf->GetOffset("RemoveAllItems", &offset);

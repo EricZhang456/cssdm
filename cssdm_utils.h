@@ -57,7 +57,6 @@ bool DM_IsPlayerAlive(int client);
 bool DM_CheckSerial(edict_t *pEdict, int serial);
 size_t DM_StringToBytes(const char *str, unsigned char buffer[], size_t maxlength);
 void DM_ApplyPatch(void *address, int offset, const dmpatch_t *patch, dmpatch_t *restore);
-CBaseEntity *DM_GetWeaponFromSlot(CBaseEntity *pEntity, int slot);
 void DM_RemoveAllItems(CBaseEntity *pEntity, bool removeSuit);
 void DM_SetMemPatchable(void *address, size_t size);
 void DM_SetDefuseKit(CBaseEntity *pEntity, bool defuseKit);

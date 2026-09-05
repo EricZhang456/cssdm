@@ -148,7 +148,10 @@ native void DM_GetWeaponName(int id, char[] name, int maxlength);
  * @param type			Weapon slot type.
  * @return				Entity index, or -1 for none.
  */
-native int DM_GetClientWeapon(int client, DmWeaponType type);
+stock int DM_GetClientWeapon(int client, DmWeaponType type)
+{
+	return GetPlayerWeaponSlot(client, view_as<int>(type));
+}
 
 /**
  * Drops a client's weapon.  CS:S DM removes dropped weapons from the world.

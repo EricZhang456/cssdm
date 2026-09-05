@@ -48,11 +48,6 @@
 				"windows"		"82"
 				"linux"			"83"
 			}
-			"Weapon_GetSlot"
-			{
-				"windows"		"292"
-				"linux"			"293"
-			}
 			"RemoveAllItems"
 			{
 				"windows"		"388"
@@ -164,13 +159,6 @@
 				"windows64"		"80"
 				"linux"			"81"
 				"linux64"		"81"
-			}
-			"Weapon_GetSlot"
-			{
-				"windows"		"275"
-				"windows64"		"275"
-				"linux"			"276"
-				"linux64"		"276"
 			}
 			"RemoveAllItems"
 			{
