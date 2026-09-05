@@ -211,6 +211,7 @@ jobs:
               mkdir -p "${dest}"
               for dir in artifacts/pkg-sm${label}-${os_name}-*/; do
                 cp -a "${dir}." "${dest}/"
+                [ -d "${dest}/cfg/cssdm/maps" ] || mkdir -p "${dest}/cfg/cssdm/maps"
               done
               if [ "${os_name}" = "windows" ]; then
                 asset="cssdm-${version}-sm${label}-windows.zip"
