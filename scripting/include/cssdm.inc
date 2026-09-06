@@ -185,7 +185,7 @@ stock void DM_DropWeapon(int client, int entity)
 		return;
 	}
 
-	CS_DropWeapon(client, entity, true);
+	CS_DropWeapon(client, entity, true, true);
 	AcceptEntityInput(entity, "Kill");
 }
 
