@@ -181,6 +181,7 @@ stock void DM_DropWeapon(int client, int entity)
 	int owner = GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity");
 	if (client != owner)
 	{
+		AcceptEntityInput(entity, "Kill");
 		return;
 	}
 
