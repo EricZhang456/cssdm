@@ -380,12 +380,12 @@ public Action PlayerPostSpawn(Handle timer, int client)
 			DM_GetWeaponClassname(index, classname, sizeof(classname));
 			GivePlayerItem(client, classname);
 		}
-		if (g_BotDefuseKits && GetClientTeam(client) == CSSDM_TEAM_CT)
+		if (g_BotDefuseKits && GetClientTeam(client) == CS_TEAM_CT)
 		{
 			GivePlayerItem(client, "item_defuser");
 		}
 	} else {
-		if (g_DefuseKits && GetClientTeam(client) == CSSDM_TEAM_CT)
+		if (g_DefuseKits && GetClientTeam(client) == CS_TEAM_CT)
 		{
 			GivePlayerItem(client, "item_defuser");
 		}

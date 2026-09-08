@@ -318,7 +318,7 @@ public Action OnClientSayCommand(int client, const char[] command, const char[] 
 		}
 
 		int team = GetClientTeam(client);
-		if (team != CSSDM_TEAM_T && team != CSSDM_TEAM_CT)
+		if (team != CS_TEAM_T && team != CS_TEAM_CT)
 		{
 			PrintToChat(client, "[CSSDM] %t", "NoRespawn Team");
 			return Plugin_Handled;

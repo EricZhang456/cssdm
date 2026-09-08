@@ -135,10 +135,10 @@ public void DM_OnClientPostSpawned(int client)
 	SetEntData(client, g_HealthOffset, 1012);	/* This overflows to show "500" */
 
 	int team = GetClientTeam(client);
-	if (team == CSSDM_TEAM_T)
+	if (team == CS_TEAM_T)
 	{
 		UTIL_Render(client, g_TColor);
-	} else if (team == CSSDM_TEAM_CT) {
+	} else if (team == CS_TEAM_CT) {
 		UTIL_Render(client, g_CTColor);
 	}
 }
