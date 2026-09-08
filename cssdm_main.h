@@ -47,6 +47,8 @@ public:
 	virtual void SDK_OnAllLoaded();
 	//virtual void SDK_OnPauseChange(bool paused);
 	virtual bool QueryRunning(char *error, size_t maxlength);
+	void OnCoreMapStart(edict_t *pEdictList, int edictCount, int clientMax);
+	void OnCoreMapEnd();
 	bool QueryInterfaceDrop(SMInterface *pInterface);
 	void NotifyInterfaceDrop(SMInterface *pInterface);
 	const char *GetExtensionVerString();

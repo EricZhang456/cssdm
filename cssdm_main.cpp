@@ -37,8 +37,6 @@
 #include "cssdm_detours.h"
 #include "cssdm_version.h"
 
-SH_DECL_HOOK3_void(IServerGameDLL, ServerActivate, SH_NOATTRIB, 0, edict_t *, int, int);
-SH_DECL_HOOK0_void(IServerGameDLL, LevelShutdown, SH_NOATTRIB, 0)
 SH_DECL_HOOK0_void(IServerGameDLL, DLLShutdown, SH_NOATTRIB, false);
 SH_DECL_HOOK2_void(IServerGameClients, ClientCommand, SH_NOATTRIB, false, edict_t *, const CCommand &);
 
@@ -133,18 +131,6 @@ void OnDLLShutdown()
 	RETURN_META(MRES_IGNORED);
 }
 
-void ServerActivate(edict_t *pEdictList, int edictCount, int clientMax)
-{
-	OnLevelInitialized();
-	RETURN_META(MRES_IGNORED);
-}
-
-void LevelShutdown()
-{
-	OnLevelEnd();
-	RETURN_META(MRES_IGNORED);
-}
-
 bool Startup(char *error, size_t maxlength)
 {
 	playerhelpers->AddClientListener(&g_ClientListener);
@@ -158,8 +144,6 @@ bool Startup(char *error, size_t maxlength)
 
 	g_Startup = true;
 
-	SH_ADD_HOOK_STATICFUNC(IServerGameDLL, ServerActivate, gamedll, ServerActivate, true);
-	SH_ADD_HOOK_STATICFUNC(IServerGameDLL, LevelShutdown, gamedll, LevelShutdown, false);
 	SH_ADD_HOOK_STATICFUNC(IServerGameDLL, DLLShutdown, gamedll, OnDLLShutdown, false);
 	SH_ADD_HOOK_STATICFUNC(IServerGameClients, ClientCommand, gameclients, OnClientCommand_Post, true);
 
@@ -206,8 +190,6 @@ void Shutdown()
 	/* Unhook everything from SourceHook */
 	SH_REMOVE_HOOK_STATICFUNC(IServerGameClients, ClientCommand, gameclients, OnClientCommand_Post, true);
 	SH_REMOVE_HOOK_STATICFUNC(IServerGameDLL, DLLShutdown, gamedll, OnDLLShutdown, false);
-	SH_REMOVE_HOOK_STATICFUNC(IServerGameDLL, LevelShutdown, gamedll, LevelShutdown, false);
-	SH_REMOVE_HOOK_STATICFUNC(IServerGameDLL, ServerActivate, gamedll, ServerActivate, true);
 }
 
 void Deathmatch::SDK_OnAllLoaded()
@@ -242,6 +224,16 @@ bool Deathmatch::QueryRunning(char *error, size_t maxlength)
 	}
 
 	return true;
+}
+
+void Deathmatch::OnCoreMapStart(edict_t *pEdictList, int edictCount, int clientMax)
+{
+	OnLevelInitialized();
+}
+
+void Deathmatch::OnCoreMapEnd()
+{
+	OnLevelEnd();
 }
 
 bool Deathmatch::QueryInterfaceDrop(SMInterface *pInterface)
