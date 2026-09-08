@@ -42,18 +42,18 @@
 class Deathmatch : public SDKExtension
 {
 public:
-	virtual bool SDK_OnLoad(char *error, size_t maxlength, bool late);
-	virtual void SDK_OnUnload();
-	virtual void SDK_OnAllLoaded();
+	bool SDK_OnLoad(char *error, size_t maxlength, bool late) override;
+	void SDK_OnUnload() override;
+	void SDK_OnAllLoaded() override;
 	//virtual void SDK_OnPauseChange(bool paused);
-	virtual bool QueryRunning(char *error, size_t maxlength);
-	void OnCoreMapStart(edict_t *pEdictList, int edictCount, int clientMax);
-	void OnCoreMapEnd();
-	bool QueryInterfaceDrop(SMInterface *pInterface);
-	void NotifyInterfaceDrop(SMInterface *pInterface);
-	const char *GetExtensionVerString();
+	bool QueryRunning(char *error, size_t maxlength) override;
+	void OnCoreMapStart(edict_t *pEdictList, int edictCount, int clientMax) override;
+	void OnCoreMapEnd() override;
+	bool QueryInterfaceDrop(SMInterface *pInterface) override;
+	void NotifyInterfaceDrop(SMInterface *pInterface) override;
+	const char *GetExtensionVerString() override;
 public:
-	virtual bool SDK_OnMetamodLoad(ISmmAPI *ismm, char *error, size_t maxlength, bool late);
+	bool SDK_OnMetamodLoad(ISmmAPI *ismm, char *error, size_t maxlength, bool late) override;
 	//virtual bool SDK_OnMetamodUnload(char *error, size_t maxlength);
 	//virtual bool SDK_OnMetamodPauseChange(bool paused, char *error, size_t maxlength);
 };

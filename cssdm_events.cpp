@@ -44,7 +44,7 @@ List<ITimer *> g_RagdollTimers;
 class RagdollRemoval : public ITimedEvent
 {
 public:
-	ResultType OnTimer(ITimer *pTimer, void *pData)
+	ResultType OnTimer(ITimer *pTimer, void *pData) override
 	{
 		if (g_IsRunning)
 		{
@@ -67,7 +67,7 @@ public:
 		return Pl_Stop;
 	}
 
-	void OnTimerEnd(ITimer *pTimer, void *pData)
+	void OnTimerEnd(ITimer *pTimer, void *pData) override
 	{
 		delete static_cast<DMData *>(pData);
 	}
@@ -76,7 +76,7 @@ public:
 class PlayerSpawner : public ITimedEvent
 {
 public:
-	ResultType OnTimer(ITimer *pTimer, void *pData)
+	ResultType OnTimer(ITimer *pTimer, void *pData) override
 	{
 		if (!g_IsRunning)
 		{
@@ -107,7 +107,7 @@ public:
 		return Pl_Stop;
 	}
 
-	void OnTimerEnd(ITimer *pTimer, void *pData)
+	void OnTimerEnd(ITimer *pTimer, void *pData) override
 	{
 		DMData *data = static_cast<DMData *>(pData);
 		int client = data->index;

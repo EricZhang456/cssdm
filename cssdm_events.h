@@ -36,8 +36,8 @@
 	class cls_event_##name : public IGameEventListener2 \
 	{ \
 	public: \
-		virtual void FireGameEvent(IGameEvent *event); \
-		virtual int	 GetEventDebugID( void ) { return EVENT_DEBUG_ID_INIT; } \
+		void FireGameEvent(IGameEvent *event) override; \
+		int	GetEventDebugID( void ) override { return EVENT_DEBUG_ID_INIT; } \
 	}; \
 	extern cls_event_##name g_cls_event_##name;
 #else
@@ -45,7 +45,7 @@
 	class cls_event_##name : public IGameEventListener2 \
 	{ \
 	public: \
-		virtual void FireGameEvent(IGameEvent *event); \
+		void FireGameEvent(IGameEvent *event) override; \
 	}; \
 	extern cls_event_##name g_cls_event_##name;
 #endif

@@ -61,7 +61,7 @@ ConVar cssdm_spawn_method("cssdm_spawn_method",
 class LinkConVars : public IConCommandBaseAccessor
 {
 public:
-	bool RegisterConCommandBase(ConCommandBase *pBase)
+	bool RegisterConCommandBase(ConCommandBase *pBase) override
 	{
 		return META_REGCVAR(pBase);
 	}
