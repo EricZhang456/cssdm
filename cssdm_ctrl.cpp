@@ -107,7 +107,7 @@ void OnLevelInitialized()
 #endif
 	engine->ServerCommand(map_cmd);
 
-	engine->ServerCommand("cssdm internal 1\n");
+	DM_StartEverything();
 }
 
 void OnLevelEnd()
@@ -166,28 +166,4 @@ bool DM_Enable()
 	}
 
 	return true;
-}
-
-CON_COMMAND(cssdm, "CS:S DM console menu")
-{
-	int argc = args.ArgC();
-	if (argc < 2)
-	{
-		/* :TODO: display menu */
-		return;
-	}
-
-	const char *arg = args.Arg(1);
-	if (strcmp(arg, "internal") == 0)
-	{
-		if (argc < 3)
-		{
-			return;
-		}
-		int num = atoi(args.Arg(2));
-		if (num == 1)
-		{
-			DM_StartEverything();
-		}
-	}
 }
