@@ -36,6 +36,11 @@
 				"windows"		"870"
 				"linux"			"6800"
 			}
+			"CalcDomRevPatch"
+			{
+				"windows"		"86"
+				"linux"			"111"
+			}
 			/* Virtual indexes */
 			"IPointsForKill"
 			{
@@ -51,11 +56,6 @@
 			{
 				"windows"		"278"
 				"linux"			"279"
-			}
-			"CalcDomRevPatch"
-			{
-				"windows"		"86"
-				"linux"			"111"
 			}
 		}
 		"Signatures"
@@ -131,6 +131,13 @@
 				"linux"			"504"
 				"linux64"		"495"
 			}
+			"CalcDomRevPatch"
+			{
+				"windows"		"65"
+				"windows64"		"88"
+				"linux"			"72"
+				"linux64"		"90"
+			}
 			/* Virtual indexes */
 			"IPointsForKill"
 			{
@@ -159,13 +166,6 @@
 				"windows64"		"156"
 				"linux"			"157"
 				"linux64"		"157"
-			}
-			"CalcDomRevPatch"
-			{
-				"windows"		"65"
-				"windows64"		"88"
-				"linux"			"72"
-				"linux64"		"90"
 			}
 		}
 		"Signatures"
