@@ -85,12 +85,14 @@ static void ChangeStatus(IConVar *cvar, const char *value, float flOldValue)
 
 static void ChangeFFAStatus(IConVar *cvar, const char *value, float flOldValue)
 {
+#if SOURCE_ENGINE != SE_CSGO
 	if (cssdm_ffa_enabled.GetInt() && !DM_FFA_IsPatched() && DM_FFA_IsPrepared())
 	{
 		DM_Patch_FFA();
 	} else if (!cssdm_ffa_enabled.GetInt() && DM_FFA_IsPatched()) {
 		DM_Unpatch_FFA();
 	}
+#endif
 }
 
 static void ChangeSpawnStatus(IConVar *cvar, const char *value, float flOldValue)

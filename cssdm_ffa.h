@@ -27,6 +27,7 @@
 #ifndef _INCLUDE_CSSDM_FFA_H_
 #define _INCLUDE_CSSDM_FFA_H_
 
+#if SOURCE_ENGINE != SE_CSGO
 bool DM_FFA_IsPatched();
 bool DM_FFA_IsPrepared();
 
@@ -34,5 +35,6 @@ bool DM_FFA_IsPrepared();
 bool DM_Prepare_FFA(char *error, size_t maxlength);
 bool DM_Unpatch_FFA();
 bool DM_Patch_FFA();
+#endif
 
 #endif //_INCLUDE_CSSDM_FFA_H_

@@ -83,13 +83,13 @@ public void OnPluginStart()
 		SetFailState("Cannot load CSSDM gamedata.");
 	}
 
-	StartPrepSDKCall(SDKCall_GameRules);
-	if (!PrepSDKCall_SetFromConf(gamedata, SDKConf_Virtual, "GoToIntermission"))
-	{
-		delete gamedata;
-		SetFailState("Cannot find GoToIntermission offset.");
-	}
-	g_IntermissionSDKCall = EndPrepSDKCall();
+	// StartPrepSDKCall(SDKCall_GameRules);
+	// if (!PrepSDKCall_SetFromConf(gamedata, SDKConf_Virtual, "GoToIntermission"))
+	// {
+	// 	delete gamedata;
+	// 	SetFailState("Cannot find GoToIntermission offset.");
+	// }
+	// g_IntermissionSDKCall = EndPrepSDKCall();
 
 	delete gamedata;
 }
