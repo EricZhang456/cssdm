@@ -32,7 +32,6 @@ bool DM_FFA_IsPrepared();
 
 /* Internal */
 bool DM_Prepare_FFA(char *error, size_t maxlength);
-void DM_Shutdown_FFA();
 bool DM_Unpatch_FFA();
 bool DM_Patch_FFA();
 
