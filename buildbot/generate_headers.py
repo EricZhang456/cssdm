@@ -6,8 +6,8 @@ import subprocess
 
 argv = sys.argv[1:]
 if len(argv) < 2:
-    sys.stderr.write('Usage: generate_headers.py <source_path> <output_folder>\n')
-    sys.exit(1)
+	sys.stderr.write('Usage: generate_headers.py <source_path> <output_folder>\n')
+	sys.exit(1)
 
 source_dir = os.path.abspath(os.path.normpath(argv[0]))
 build_dir = os.path.normpath(argv[1])
@@ -24,13 +24,13 @@ def GetVersion():
 				git_head_path = os.path.join(source_dir, '.git', 'HEAD')
 
 	return open(git_head_path, 'r').read().strip();
-	
+
 def PerformReversioning():
 	rev = GetVersion()
-	
+
 	args = ['git', 'rev-list', '--count', 'HEAD']
 	cset = subprocess.run(args, capture_output=True, text=True).stdout.strip()
-	
+
 	with open(os.path.join(source_dir, 'product.version'), 'r') as productFile:
 		productContents = productFile.read()
 	m = re.match(r'(\d+)\.(\d+)\.(\d+)(.*)', productContents)
