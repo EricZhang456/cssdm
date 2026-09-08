@@ -36,12 +36,6 @@
 				"windows"		"870"
 				"linux"			"6800"
 			}
-			/* Offset into gamerules constructor - bogo value linux/mac */
-			"g_pGameRules"
-			{
-				"windows"		"49"
-				"linux"			"47"
-			}
 			/* Virtual indexes */
 			"IPointsForKill"
 			{
@@ -136,14 +130,6 @@
 				"windows64"		"1156"
 				"linux"			"504"
 				"linux64"		"495"
-			}
-			/* Offset into gamerules constructor - bogo value linux/mac */
-			"g_pGameRules"
-			{
-				"windows"		"5"
-				"windows64"		"16"
-				"linux"			"1"
-				"linux64"		"1"
 			}
 			/* Virtual indexes */
 			"IPointsForKill"
