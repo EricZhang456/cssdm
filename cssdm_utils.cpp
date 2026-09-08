@@ -192,26 +192,6 @@ void DM_SetDefuseKit(CBaseEntity *pEntity, bool defuseKit)
 	*reinterpret_cast<bool *>(reinterpret_cast<unsigned char *>(pEntity) + g_DefuserOffset) = defuseKit;
 }
 
-int DM_GiveAmmo(CBaseEntity *pEntity, int type, int count, bool noSound)
-{
-	unsigned char vstk[sizeof(CBaseEntity *) + sizeof(int)*2 + sizeof(bool)];
-	unsigned char *vptr = vstk;
-
-	*reinterpret_cast<CBaseEntity **>(vptr) = pEntity;
-	vptr += sizeof(CBaseEntity *);
-	*reinterpret_cast<int *>(vptr) = count;
-	vptr += sizeof(int);
-	*reinterpret_cast<int *>(vptr) = type;
-	vptr += sizeof(int);
-	*reinterpret_cast<bool *>(vptr) = noSound;
-	//vptr += sizeof(bool);
-
-	int ret;
-	g_pGiveAmmo->Execute(vstk, &ret);
-
-	return ret;
-}
-
 size_t DM_StringToBytes(const char *str, unsigned char buffer[], size_t maxlength)
 {
 	size_t real_bytes = 0;
@@ -300,15 +280,6 @@ bool InitializeUtils(char *error, size_t maxlength)
 	pass[0].type = PassType_Basic;
 	g_pRemoveAllItems = bintools->CreateVCall(offset, 0, 0, NULL, pass, 1);
 	g_CallWrappers.push_back(g_pRemoveAllItems);
-
-	/** GIVEAMMO */
-	g_pDmConf->GetOffset("GiveAmmo", &offset);
-	pass[0].flags = pass[1].flags = pass[2].flags = pass[3].flags = PASSFLAG_BYVAL;
-	pass[0].size = pass[1].size = pass[2].size = sizeof(int);
-	pass[3].size = sizeof(bool);
-	pass[0].type = pass[1].type = pass[2].type = pass[3].type = PassType_Basic;
-	g_pGiveAmmo = bintools->CreateVCall(offset, 0, 0, &pass[3], pass, 3);
-	g_CallWrappers.push_back(g_pGiveAmmo);
 
 	/** PROPERTIES */
 	sm_sendprop_info_t prop;

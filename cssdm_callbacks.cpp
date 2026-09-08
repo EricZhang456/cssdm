@@ -221,22 +221,6 @@ static cell_t DMN_IsClientAlive(IPluginContext *pContext, const cell_t *params)
 	return DM_IsPlayerAlive(params[1]) ? 1 : 0;
 }
 
-static cell_t DMN_GiveAmmo(IPluginContext *pContext, const cell_t *params)
-{
-	if (params[1] < 1 || params[1] > gpGlobals->maxClients)
-	{
-		return pContext->ThrowNativeError("Invalid client index %d", params[1]);
-	}
-
-	dm_player_t *player = DM_GetPlayer(params[1]);
-	if (!player->pEntity)
-	{
-		return pContext->ThrowNativeError("Client %d is not in game", params[1]);
-	}
-
-	return DM_GiveAmmo(player->pEntity, params[2], params[3], params[4] ? true : false);
-}
-
 sp_nativeinfo_t g_BaseNatives[] = 
 {
 	{"DM_GetSpawnMethod",		DMN_GetSpawnMethod},
@@ -249,6 +233,5 @@ sp_nativeinfo_t g_BaseNatives[] =
 	{"DM_GetSpawnWaitTime",		DMN_GetSpawnWaitTime},
 	{"DM_RespawnClient",		DMN_RespawnClient},
 	{"DM_IsClientAlive",		DMN_IsClientAlive},
-	{"DM_GiveClientAmmo",		DMN_GiveAmmo},
 	{NULL,						NULL},
 };

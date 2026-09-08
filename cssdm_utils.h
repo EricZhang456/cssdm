@@ -60,7 +60,6 @@ void DM_ApplyPatch(void *address, int offset, const dmpatch_t *patch, dmpatch_t 
 void DM_RemoveAllItems(CBaseEntity *pEntity, bool removeSuit);
 void DM_SetMemPatchable(void *address, size_t size);
 void DM_SetDefuseKit(CBaseEntity *pEntity, bool defuseKit);
-int DM_GiveAmmo(CBaseEntity *pEntity, int type, int count, bool noSound);
 
 /** "Internal" functions */
 CBaseEntity *DM_GetAndClearRagdoll(CBaseEntity *pEntity, int &serial);

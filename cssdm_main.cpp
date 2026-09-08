@@ -96,7 +96,6 @@ bool Deathmatch::SDK_OnLoad(char *error, size_t maxlength, bool late)
 	VERIFY_SIGNATURE("RoundRespawn");
 	VERIFY_SIGNATURE("DropWeapons");
 	VERIFY_OFFSET("RemoveAllItems");
-	VERIFY_OFFSET("GiveAmmo");
 
 	if (!DM_ParseWeapons(error, maxlength))
 	{

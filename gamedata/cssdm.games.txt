@@ -52,11 +52,6 @@
 				"windows"		"388"
 				"linux"			"389"
 			}
-			"GiveAmmo"
-			{
-				"windows"		"278"
-				"linux"			"279"
-			}
 		}
 		"Signatures"
 		{
@@ -152,13 +147,6 @@
 				"windows64"		"349"
 				"linux"			"350"
 				"linux64"		"350"
-			}
-			"GiveAmmo"
-			{
-				"windows"		"259"
-				"windows64"		"259"
-				"linux"			"260"
-				"linux64"		"260"
 			}
 			"GoToIntermission"
 			{

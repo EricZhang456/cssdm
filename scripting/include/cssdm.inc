@@ -234,7 +234,20 @@ native bool DM_IsClientAlive(int client);
  * @return				Actual ammo amount given.
  * @error				Invalid client index or client not in game.
  */
-native int DM_GiveClientAmmo(int client, int type, int count, bool noSound=false);
+stock int DM_GiveClientAmmo(int client, int type, int count, bool noSound=false)
+{
+	if (client <= 0 || client > MaxClients)
+	{
+		ThrowError("Invalid client index %d", client);
+	}
+
+	if (!IsClientInGame(client))
+	{
+		ThrowError("Client %d is not in game", client);
+	}
+
+	return GivePlayerAmmo(client, count, type, noSound);
+}
 
 /**
  * Do not edit below this line!
