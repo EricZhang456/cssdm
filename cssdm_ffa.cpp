@@ -29,7 +29,6 @@
 #include "cssdm_utils.h"
 #include "sm_platform.h"
 #include "cssdm_includesdk.h"
-#include "cssdm_main.h"
 
 SH_DECL_MANUALHOOK2(CGameRules_IPointsForKill, 62+EXTRA_VTBL_OFFSET, 0, 0, int, CBasePlayer *, CBasePlayer *);
 

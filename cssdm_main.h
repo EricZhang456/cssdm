@@ -34,8 +34,6 @@
  */
 
 #include <smsdk_ext.h>
-#include <ISDKTools.h>
-#include <IBinTools.h>
 
 /**
  * @brief Sample implementation of the SDK Extension.
@@ -59,6 +57,5 @@ public:
 };
 
 extern Deathmatch g_DM;
-extern ISDKTools* sdktools;
 
 #endif // _INCLUDE_SOURCEMOD_EXTENSION_PROPER_H_
