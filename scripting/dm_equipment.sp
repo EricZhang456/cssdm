@@ -353,6 +353,11 @@ public Action PlayerPostSpawn(Handle timer, int client)
 				index = g_BotSecondaryList[index];
 			}
 			char classname[64];
+			int currentSecondary = DM_GetClientWeapon(client, DmWeapon_Secondary);
+			if (currentSecondary != -1)
+			{
+				DM_DropWeapon(client, currentSecondary);
+			}
 			DM_GetWeaponClassname(index, classname, sizeof(classname));
 			GivePlayerItem(client, classname);
 		}
@@ -367,6 +372,11 @@ public Action PlayerPostSpawn(Handle timer, int client)
 				index = g_BotPrimaryList[index];
 			}
 			char classname[64];
+			int currentPrimary = DM_GetClientWeapon(client, DmWeapon_Primary);
+			if (currentPrimary != -1)
+			{
+				DM_DropWeapon(client, currentPrimary);
+			}
 			DM_GetWeaponClassname(index, classname, sizeof(classname));
 			GivePlayerItem(client, classname);
 		}
