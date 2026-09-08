@@ -58,7 +58,6 @@
 				"windows"		"278"
 				"linux"			"279"
 			}
-			/* Next _two_ are detour byte "save" counts */
 			"CalcDomRevPatch"
 			{
 				"windows"		"86"
@@ -175,7 +174,6 @@
 				"linux"			"157"
 				"linux64"		"157"
 			}
-			/* Next _two_ are detour byte "save" counts */
 			"CalcDomRevPatch"
 			{
 				"windows"		"65"
