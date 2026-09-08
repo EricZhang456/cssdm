@@ -1,7 +1,7 @@
 /**
  * vim: set ts=4 :
  * ===============================================================
- * CS:S DM, Copyright (C) 2004-2007 AlliedModders LLC. 
+ * CS:S DM, Copyright (C) 2004-2007 AlliedModders LLC.
  * By David "BAILOPAN" Anderson
  * All rights reserved.
  * ===============================================================
@@ -10,20 +10,19 @@
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or (at
  * your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; see the file COPYING; if not, write to the
  * Free Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston,
  * MA 02110-1301 USA
- * 
+ *
  * Version: $Id$
  */
-
 
 #include "cssdm_main.h"
 #include "cssdm_headers.h"
@@ -55,6 +54,7 @@ IServerGameClients *gameclients = NULL;
 ISourcePawnEngine *spengine = NULL;
 IBotManager *botmanager = NULL;
 ICvar *icvar = NULL;
+ISDKTools *sdktools = NULL;
 char g_GlobError[255] = {0};
 bool g_IsLoadedOkay = false;
 bool g_Startup = false;
@@ -85,6 +85,8 @@ SMEXT_LINK(&g_DM);
 bool Deathmatch::SDK_OnLoad(char *error, size_t maxlength, bool late)
 {
 	sharesys->AddDependency(myself, "bintools.ext", true, true);
+	sharesys->AddDependency(myself, "sdktools.ext", true, true);
+	sharesys->RegisterLibrary(myself, "cssdm");
 	sharesys->AddNatives(myself, g_BaseNatives);
 	if (!gameconfs->LoadGameConfigFile("cssdm.games", &g_pDmConf, error, maxlength))
 	{
@@ -211,6 +213,7 @@ void Shutdown()
 void Deathmatch::SDK_OnAllLoaded()
 {
 	SM_GET_LATE_IFACE(BINTOOLS, bintools);
+	SM_GET_LATE_IFACE(SDKTOOLS, sdktools);
 
 	g_IsLoadedOkay = Startup(g_GlobError, sizeof(g_GlobError));
 
@@ -230,6 +233,7 @@ void Deathmatch::SDK_OnUnload()
 bool Deathmatch::QueryRunning(char *error, size_t maxlength)
 {
 	SM_CHECK_IFACE(BINTOOLS, bintools);
+	SM_CHECK_IFACE(SDKTOOLS, sdktools);
 
 	if (!g_IsLoadedOkay && g_GlobError[0] != '\0')
 	{
@@ -242,7 +246,7 @@ bool Deathmatch::QueryRunning(char *error, size_t maxlength)
 
 bool Deathmatch::QueryInterfaceDrop(SMInterface *pInterface)
 {
-	if (pInterface == bintools)
+	if (pInterface == bintools || pInterface == sdktools)
 	{
 		return false;
 	}
@@ -257,6 +261,10 @@ void Deathmatch::NotifyInterfaceDrop(SMInterface *pInterface)
 	{
 		ShutdownUtils();
 		bintools = NULL;
+	}
+	if (pInterface == sdktools)
+	{
+		sdktools = NULL;
 	}
 }
 

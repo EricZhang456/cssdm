@@ -29,6 +29,7 @@
 #include "cssdm_utils.h"
 #include "sm_platform.h"
 #include "cssdm_includesdk.h"
+#include "cssdm_main.h"
 
 SH_DECL_MANUALHOOK2(CGameRules_IPointsForKill, 62+EXTRA_VTBL_OFFSET, 0, 0, int, CBasePlayer *, CBasePlayer *);
 
@@ -47,9 +48,10 @@ SH_DECL_MANUALHOOK2(CGameRules_IPointsForKill, 62+EXTRA_VTBL_OFFSET, 0, 0, int, 
 #endif
 
 bool g_FFA_Patched = false;
+bool g_FFA_PointsHooked = false;
 bool g_FFA_Prepared = false;
 
-void **g_gamerules_addr = NULL;
+void *g_gamerules_addr = NULL;
 
 /* Lagcomp */
 static int g_lagcomp_offset = 0;
@@ -115,11 +117,6 @@ bool DM_Prepare_FFA(char *error, size_t maxlength)
 		snprintf(error, maxlength, "Could not find \"CalcDominationAndRevenge\" signature!");
 		return false;
 	}
-	if (!g_pDmConf->GetMemSig("CGameRules", &gamerules) || !gamerules)
-	{
-		snprintf(error, maxlength, "Could not find \"CGameRules\" signature!");
-		return false;
-	}
 
 	if (!g_pDmConf->GetOffset("LagCompPatch", &g_lagcomp_offset)
 		|| !g_lagcomp_offset)
@@ -168,25 +165,15 @@ bool DM_Prepare_FFA(char *error, size_t maxlength)
 #endif
 
 	/* Load the GameRules pointer */
-	int offset;
-#if defined(_MSC_VER) || SOURCE_ENGINE == SE_CSGO
-	if (!g_pDmConf->GetOffset("g_pGameRules", &offset)
-		|| !offset)
+	if (!sdktools)
 	{
-		snprintf(error, maxlength, "Could not find g_pGameRules offset");
+		snprintf(error, maxlength, "SDKTools not loaded");
 		return false;
 	}
-#if !defined PLATFORM_64BITS
-	g_gamerules_addr = reinterpret_cast<void **>(*reinterpret_cast<void **>(reinterpret_cast<uintptr_t>(gamerules) + offset));
-#else
-	int32_t varOffset = *reinterpret_cast<int32_t *>(reinterpret_cast<uintptr_t>(gamerules) + offset);
-	g_gamerules_addr = reinterpret_cast<void **>(static_cast<unsigned char*>(gamerules) + offset + sizeof(int32_t) + varOffset);
-#endif
-#else
-	g_gamerules_addr = reinterpret_cast<void **>(gamerules);
-#endif
+	/* Get the GameRules address later when map starts */
 
 	/* Get the "IPointsForKill" offset */
+	int offset;
 	if (!g_pDmConf->GetOffset("IPointsForKill", &offset)
 		|| !offset)
 	{
@@ -200,9 +187,25 @@ bool DM_Prepare_FFA(char *error, size_t maxlength)
 	return true;
 }
 
+bool LoadGameRulesAddress()
+{
+	if (!sdktools)
+	{
+		g_pSM->LogError(myself, "SDKTools not loaded. FFA points hook will not work.");
+		return false;
+	}
+	g_gamerules_addr = sdktools->GetGameRules();
+	if (!g_gamerules_addr)
+	{
+		g_pSM->LogError(myself, "Could not find GameRules address. FFA points hook will not work.");
+		return false;
+	}
+	return true;
+}
+
 bool DM_Patch_FFA()
 {
-	if (g_FFA_Patched || !g_FFA_Prepared || *g_gamerules_addr == NULL)
+	if (g_FFA_Patched || !g_FFA_Prepared)
 	{
 		return false;
 	}
@@ -214,7 +217,12 @@ bool DM_Patch_FFA()
 #endif
 	DM_ApplyPatch(g_domrev_addr, g_domrev_offset, &g_domrev_patch, &g_domrev_restore);
 
-	SH_ADD_MANUALHOOK_STATICFUNC(CGameRules_IPointsForKill, *g_gamerules_addr, OnIPointsForKill, false);
+	// needs a new gamerules address on every map load
+	if (!g_FFA_PointsHooked && LoadGameRulesAddress())
+	{
+		SH_ADD_MANUALHOOK_STATICFUNC(CGameRules_IPointsForKill, g_gamerules_addr, OnIPointsForKill, false);
+		g_FFA_PointsHooked = true;
+	}
 
 	g_FFA_Patched = true;
 
@@ -228,9 +236,11 @@ bool DM_Unpatch_FFA()
 		return false;
 	}
 
-	if (!g_IsInGlobalShutdown)
+	// g_gamerules_addr won't be null if we're already hooked
+	if (!g_IsInGlobalShutdown && g_FFA_PointsHooked)
 	{
-		SH_REMOVE_MANUALHOOK_STATICFUNC(CGameRules_IPointsForKill, *g_gamerules_addr, OnIPointsForKill, false);
+		SH_REMOVE_MANUALHOOK_STATICFUNC(CGameRules_IPointsForKill, g_gamerules_addr, OnIPointsForKill, false);
+		g_FFA_PointsHooked = false;
 	}
 
 	DM_ApplyPatch(g_lagcomp_addr, g_lagcomp_offset, &g_lagcomp_restore, NULL);
