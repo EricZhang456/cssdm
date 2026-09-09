@@ -435,7 +435,7 @@ void GiveDefuserToClient(int client, bool give)
 	{
 		if (GetEntProp(client, Prop_Send, "m_bHasDefuser") == 0)
 		{
-			GivePlayerItem(client, "item_defuser");
+			SetEntProp(client, Prop_Send, "m_bHasDefuser", 1);
 		}
 	}
 	else
