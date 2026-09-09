@@ -1,7 +1,7 @@
 /**
  * vim: set ts=4 :
  * ===============================================================
- * CS:S DM, Copyright (C) 2004-2007 AlliedModders LLC. 
+ * CS:S DM, Copyright (C) 2004-2007 AlliedModders LLC.
  * By David "BAILOPAN" Anderson
  * All rights reserved.
  * ===============================================================
@@ -10,20 +10,19 @@
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or (at
  * your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; see the file COPYING; if not, write to the
  * Free Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston,
  * MA 02110-1301 USA
- * 
+ *
  * Version: $Id$
  */
-
 
 #include "cssdm_main.h"
 #include "cssdm_headers.h"
@@ -38,8 +37,6 @@
 #include "cssdm_detours.h"
 #include "cssdm_version.h"
 
-SH_DECL_HOOK3_void(IServerGameDLL, ServerActivate, SH_NOATTRIB, 0, edict_t *, int, int);
-SH_DECL_HOOK0_void(IServerGameDLL, LevelShutdown, SH_NOATTRIB, 0)
 SH_DECL_HOOK0_void(IServerGameDLL, DLLShutdown, SH_NOATTRIB, false);
 SH_DECL_HOOK2_void(IServerGameClients, ClientCommand, SH_NOATTRIB, false, edict_t *, const CCommand &);
 
@@ -47,6 +44,7 @@ Deathmatch g_DM;
 IGameEventManager2 *gameevents = NULL;
 IBaseFileSystem *basefilesystem = NULL;
 IBinTools *bintools = NULL;
+ISDKTools *sdktools = NULL;
 IGameConfig *g_pDmConf = NULL;
 CGlobalVars *gpGlobals = NULL;
 IPlayerInfoManager *playerinfomngr = NULL;
@@ -85,6 +83,8 @@ SMEXT_LINK(&g_DM);
 bool Deathmatch::SDK_OnLoad(char *error, size_t maxlength, bool late)
 {
 	sharesys->AddDependency(myself, "bintools.ext", true, true);
+	sharesys->AddDependency(myself, "sdktools.ext", true, true);
+	sharesys->RegisterLibrary(myself, "cssdm");
 	sharesys->AddNatives(myself, g_BaseNatives);
 	if (!gameconfs->LoadGameConfigFile("cssdm.games", &g_pDmConf, error, maxlength))
 	{
@@ -94,11 +94,8 @@ bool Deathmatch::SDK_OnLoad(char *error, size_t maxlength, bool late)
 	void *addr;
 	int offset;
 	VERIFY_SIGNATURE("RoundRespawn");
-	VERIFY_SIGNATURE("CSWeaponDrop");
 	VERIFY_SIGNATURE("DropWeapons");
-	VERIFY_OFFSET("Weapon_GetSlot");
 	VERIFY_OFFSET("RemoveAllItems");
-	VERIFY_OFFSET("GiveAmmo");
 
 	if (!DM_ParseWeapons(error, maxlength))
 	{
@@ -133,18 +130,6 @@ void OnDLLShutdown()
 	RETURN_META(MRES_IGNORED);
 }
 
-void ServerActivate(edict_t *pEdictList, int edictCount, int clientMax)
-{
-	OnLevelInitialized();
-	RETURN_META(MRES_IGNORED);
-}
-
-void LevelShutdown()
-{
-	OnLevelEnd();
-	RETURN_META(MRES_IGNORED);
-}
-
 bool Startup(char *error, size_t maxlength)
 {
 	playerhelpers->AddClientListener(&g_ClientListener);
@@ -155,12 +140,9 @@ bool Startup(char *error, size_t maxlength)
 	HOOK_EVENT2(round_start);
 	HOOK_EVENT2(round_end);
 	HOOK_EVENT2(server_shutdown);
-	HOOK_EVENT2(item_pickup);
 
 	g_Startup = true;
 
-	SH_ADD_HOOK_STATICFUNC(IServerGameDLL, ServerActivate, gamedll, ServerActivate, true);
-	SH_ADD_HOOK_STATICFUNC(IServerGameDLL, LevelShutdown, gamedll, LevelShutdown, false);
 	SH_ADD_HOOK_STATICFUNC(IServerGameDLL, DLLShutdown, gamedll, OnDLLShutdown, false);
 	SH_ADD_HOOK_STATICFUNC(IServerGameClients, ClientCommand, gameclients, OnClientCommand_Post, true);
 
@@ -188,7 +170,6 @@ void Shutdown()
 	UNHOOK_EVENT2(round_start);
 	UNHOOK_EVENT2(round_end);
 	UNHOOK_EVENT2(server_shutdown);
-	UNHOOK_EVENT2(item_pickup);
 
 	/* If we were never started up, the rest of this is invalid */
 	if (!g_Startup)
@@ -208,13 +189,12 @@ void Shutdown()
 	/* Unhook everything from SourceHook */
 	SH_REMOVE_HOOK_STATICFUNC(IServerGameClients, ClientCommand, gameclients, OnClientCommand_Post, true);
 	SH_REMOVE_HOOK_STATICFUNC(IServerGameDLL, DLLShutdown, gamedll, OnDLLShutdown, false);
-	SH_REMOVE_HOOK_STATICFUNC(IServerGameDLL, LevelShutdown, gamedll, LevelShutdown, false);
-	SH_REMOVE_HOOK_STATICFUNC(IServerGameDLL, ServerActivate, gamedll, ServerActivate, true);
 }
 
 void Deathmatch::SDK_OnAllLoaded()
 {
 	SM_GET_LATE_IFACE(BINTOOLS, bintools);
+	SM_GET_LATE_IFACE(SDKTOOLS, sdktools);
 
 	g_IsLoadedOkay = Startup(g_GlobError, sizeof(g_GlobError));
 
@@ -234,6 +214,7 @@ void Deathmatch::SDK_OnUnload()
 bool Deathmatch::QueryRunning(char *error, size_t maxlength)
 {
 	SM_CHECK_IFACE(BINTOOLS, bintools);
+	SM_CHECK_IFACE(SDKTOOLS, sdktools);
 
 	if (!g_IsLoadedOkay && g_GlobError[0] != '\0')
 	{
@@ -244,9 +225,19 @@ bool Deathmatch::QueryRunning(char *error, size_t maxlength)
 	return true;
 }
 
+void Deathmatch::OnCoreMapStart(edict_t *pEdictList, int edictCount, int clientMax)
+{
+	OnLevelInitialized();
+}
+
+void Deathmatch::OnCoreMapEnd()
+{
+	OnLevelEnd();
+}
+
 bool Deathmatch::QueryInterfaceDrop(SMInterface *pInterface)
 {
-	if (pInterface == bintools)
+	if (pInterface == bintools || pInterface == sdktools)
 	{
 		return false;
 	}
@@ -261,6 +252,10 @@ void Deathmatch::NotifyInterfaceDrop(SMInterface *pInterface)
 	{
 		ShutdownUtils();
 		bintools = NULL;
+	}
+	if (pInterface == sdktools)
+	{
+		sdktools = NULL;
 	}
 }
 

@@ -28,8 +28,8 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 2,1,2,0
- PRODUCTVERSION 2,1,2,0
+ FILEVERSION CSSDM_FILE_VERSION
+ PRODUCTVERSION CSSDM_FILE_VERSION
  FILEFLAGSMASK 0x17L
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -48,7 +48,7 @@ BEGIN
             VALUE "FileDescription", "CS:S DM"
             VALUE "FileVersion", CSSDM_FULL_VERSION
             VALUE "InternalName", "cssdm"
-            VALUE "LegalCopyright", "Copyright (c) 2004-2010, AlliedModders LLC and David 'BAILOPAN' Anderson"
+            VALUE "LegalCopyright", "Copyright (c) 2004-2026, AlliedModders LLC and David 'BAILOPAN' Anderson"
             VALUE "OriginalFilename", "cssdm.ext.dll"
             VALUE "ProductName", "CS:S DM"
             VALUE "ProductVersion", CSSDM_FULL_VERSION
@@ -67,18 +67,18 @@ END
 // TEXTINCLUDE
 //
 
-1 TEXTINCLUDE 
+1 TEXTINCLUDE
 BEGIN
     "resource.h\0"
 END
 
-2 TEXTINCLUDE 
+2 TEXTINCLUDE
 BEGIN
     "#include ""winres.h""\r\n"
     "\0"
 END
 
-3 TEXTINCLUDE 
+3 TEXTINCLUDE
 BEGIN
     "\r\n"
     "\0"

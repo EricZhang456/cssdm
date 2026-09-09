@@ -45,9 +45,9 @@ struct dm_player_t
 class ClientListener : public IClientListener
 {
 public:
-	void OnClientConnected(int client);
-	void OnClientPutInServer(int client);
-	void OnClientDisconnecting(int client);
+	void OnClientConnected(int client) override;
+	void OnClientPutInServer(int client) override;
+	void OnClientDisconnecting(int client) override;
 };
 
 dm_player_t *DM_GetPlayer(int client);

@@ -31,22 +31,7 @@
 #include <sm_platform.h>
 #include "CDetour/detours.h"
 
-CDetour *csdrop_callback = NULL;
 CDetour *drpwpns_callback = NULL;
-
-#if SOURCE_ENGINE == SE_CSGO
-DETOUR_DECL_MEMBER3(DetourCSWeaponDrop, void, CBaseEntity *, weapon, Vector, vec, bool, unknown)
-#else
-DETOUR_DECL_MEMBER3(DetourCSWeaponDrop, void, CBaseEntity *, weapon, bool, bDropShield, bool, bThrowForward)
-#endif
-{
-#if SOURCE_ENGINE == SE_CSGO
-		DETOUR_MEMBER_CALL(DetourCSWeaponDrop)(weapon, vec, unknown);
-#else
-		DETOUR_MEMBER_CALL(DetourCSWeaponDrop)(weapon, bDropShield, bThrowForward);
-#endif
-		OnClientDroppedWeapon(reinterpret_cast<CBaseEntity *>(this), weapon);
-}
 
 DETOUR_DECL_MEMBER2(DetourDrpWpns, void, bool, unknown1, bool, unknown2)
 {
@@ -63,21 +48,10 @@ void InitDropWeaponsDetour()
 	}
 }
 
-void InitCSDropDetour()
-{
-	csdrop_callback = DETOUR_CREATE_MEMBER(DetourCSWeaponDrop, "CSWeaponDrop");
-	if(csdrop_callback)
-	{
-		csdrop_callback->EnableDetour();
-	}
-
-}
-
 void DM_InitDetours()
 {
 	CDetourManager::Init(g_pSM->GetScriptingEngine(), g_pDmConf);
 	InitDropWeaponsDetour();
-	InitCSDropDetour();
 }
 
 void DM_ShutdownDetours()
@@ -86,10 +60,5 @@ void DM_ShutdownDetours()
 	{
 		drpwpns_callback->Destroy();
 		drpwpns_callback = NULL;
-	}
-	if (csdrop_callback)
-	{
-		csdrop_callback->Destroy();
-		csdrop_callback = NULL;
 	}
 }

@@ -24,6 +24,7 @@
 #pragma semicolon 1
 #include <sourcemod>
 #include <sdktools>
+#include <cstrike>
 #include <cssdm>
 
 /* Plugin stuff */
@@ -31,6 +32,8 @@ ConVar cssdm_respawn_command;
 ConVar cssdm_force_mapchanges;
 ConVar cssdm_refill_ammo;
 ConVar cssdm_disable_welcome_msgs;
+ConVar cssdm_allow_c4;
+ConVar cssdm_remove_drops;
 ConVar mp_timelimit;
 Handle g_ChangeMapTimer = INVALID_HANDLE;
 bool g_AmmoHooks = false;
@@ -60,11 +63,17 @@ public void OnPluginStart()
 	cssdm_force_mapchanges = CreateConVar("cssdm_force_mapchanges", "0", "Sets whether CS:S DM should force mapchanges");
 	cssdm_refill_ammo = CreateConVar("cssdm_refill_ammo", "1", "Sets whether CS:S DM automatically refills ammo");
 	cssdm_disable_welcome_msgs = CreateConVar("cssdm_disable_welcome_msgs", "0", "Sets whether CS:S DM should disable the welcome messages");
+	cssdm_allow_c4 = CreateConVar("cssdm_allow_c4", "0", "Sets whether C4 is allowed");
+	cssdm_remove_drops = CreateConVar("cssdm_remove_drops", "1", "Sets whether dropped items are removed");
 	mp_timelimit = FindConVar("mp_timelimit");
 
 	cssdm_force_mapchanges.AddChangeHook(CvarChange_RestartMapTimer);
 	mp_timelimit.AddChangeHook(CvarChange_RestartMapTimer);
 	cssdm_refill_ammo.AddChangeHook(CvarChange_RefillAmmo);
+
+	HookEvent("item_pickup", Event_ItemPickup);
+
+	AddCommandListener(Cmd_WeaponDrop, "drop");
 
 	g_ActiveWepOffs = FindSendPropInfo("CCSPlayer", "m_hActiveWeapon");
 
@@ -129,6 +138,26 @@ public void CvarChange_RefillAmmo(ConVar cvar, const char[] oldvalue, const char
 	}
 }
 
+public Action CS_OnCSWeaponDrop(int client, int weaponIndex, bool donated)
+{
+	if (!DM_IsRunning() || !cssdm_remove_drops.BoolValue)
+	{
+		return Plugin_Continue;
+	}
+
+	if (cssdm_allow_c4.BoolValue)
+	{
+		char classname[64];
+		GetEntityClassname(weaponIndex, classname, sizeof(classname));
+		if (StrEqual(classname, "weapon_c4"))
+		{
+			return Plugin_Continue;
+		}
+	}
+
+	return Plugin_Handled;
+}
+
 public void Event_CheckDepleted(Event event, const char[] name, bool dontBroadcast)
 {
 	int client = GetClientOfUserId(GetEventInt(event, "userid"));
@@ -147,6 +176,41 @@ public void Event_CheckDepleted(Event event, const char[] name, bool dontBroadca
 
 	/* Give something reasonable -- the game will chop it off */
 	DM_GiveClientAmmo(client, ammoType, 200, false);
+}
+
+public void Event_ItemPickup(Event event, const char[] name, bool dontBroadcast)
+{
+	if (!DM_IsRunning() || cssdm_allow_c4.BoolValue)
+	{
+		return;
+	}
+
+	char weapon[64];
+	event.GetString("item", weapon, sizeof(weapon));
+	if (!StrEqual(weapon, "c4"))
+	{
+		return;
+	}
+	int client = GetClientOfUserId(event.GetInt("userid"));
+	if (!client)
+	{
+		return;
+	}
+
+	int c4Ent = GetPlayerWeaponSlot(client, view_as<int>(DmWeapon_C4));
+	if (c4Ent != -1)
+	{
+		DM_DropWeapon(client, c4Ent);
+	}
+}
+
+public Action Cmd_WeaponDrop(int client, const char[] command, int argc)
+{
+	if (client <= 0 || !(DM_IsRunning() && cssdm_remove_drops.BoolValue))
+	{
+		return Plugin_Continue;
+	}
+	return Plugin_Handled;
 }
 
 public void CvarChange_RestartMapTimer(ConVar cvar, const char[] oldvalue, const char[] newvalue)
@@ -254,7 +318,7 @@ public Action OnClientSayCommand(int client, const char[] command, const char[] 
 		}
 
 		int team = GetClientTeam(client);
-		if (team != CSSDM_TEAM_T && team != CSSDM_TEAM_CT)
+		if (team != CS_TEAM_T && team != CS_TEAM_CT)
 		{
 			PrintToChat(client, "[CSSDM] %t", "NoRespawn Team");
 			return Plugin_Handled;

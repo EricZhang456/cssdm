@@ -35,8 +35,6 @@ using namespace SourceHook;
 
 List<ICallWrapper *> g_CallWrappers;
 ICallWrapper *g_pRoundRespawn = NULL;
-ICallWrapper *g_pWeaponGetSlot = NULL;
-ICallWrapper *g_pDropWeapon = NULL;
 ICallWrapper *g_pRemoveAllItems = NULL;
 ICallWrapper *g_pGiveAmmo = NULL;
 int g_RagdollOffset = 0;
@@ -171,36 +169,6 @@ bool DM_CheckSerial(edict_t *pEdict, int serial)
 	return (pEdict->m_NetworkSerialNumber == new_serial);
 }
 
-CBaseEntity *DM_GetWeaponFromSlot(CBaseEntity *pEntity, int slot)
-{
-	unsigned char vstk[sizeof(CBaseEntity *) + sizeof(int)];
-	*reinterpret_cast<CBaseEntity **>(&vstk[0]) = pEntity;
-	*reinterpret_cast<int *>(&vstk[sizeof(CBaseEntity*)]) = slot;
-
-	CBaseEntity *pWeapon = NULL;
-
-	g_pWeaponGetSlot->Execute(vstk, &pWeapon);
-
-	return pWeapon;
-}
-
-void DM_DropWeapon(CBaseEntity *pEntity, CBaseEntity *pWeapon)
-{
-	unsigned char vstk[sizeof(CBaseEntity *) * 2 + sizeof(bool) * 2];
-	unsigned char *vptr = vstk;
-
-	*reinterpret_cast<CBaseEntity **>(vptr) = pEntity;
-	vptr += sizeof(CBaseEntity *);
-	*reinterpret_cast<CBaseEntity **>(vptr) = pWeapon;
-	vptr += sizeof(CBaseEntity *);
-	*reinterpret_cast<bool *>(vptr) = true;
-	vptr += sizeof(bool);
-	*reinterpret_cast<bool *>(vptr) = false;
-	//vptr += sizeof(bool);
-
-	g_pDropWeapon->Execute(vstk, NULL);
-}
-
 void DM_RemoveAllItems(CBaseEntity *pEntity, bool removeSuit)
 {
 	unsigned char vstk[sizeof(CBaseEntity *) + sizeof(bool)];
@@ -222,26 +190,6 @@ void DM_SetDefuseKit(CBaseEntity *pEntity, bool defuseKit)
 	}
 
 	*reinterpret_cast<bool *>(reinterpret_cast<unsigned char *>(pEntity) + g_DefuserOffset) = defuseKit;
-}
-
-int DM_GiveAmmo(CBaseEntity *pEntity, int type, int count, bool noSound)
-{
-	unsigned char vstk[sizeof(CBaseEntity *) + sizeof(int)*2 + sizeof(bool)];
-	unsigned char *vptr = vstk;
-
-	*reinterpret_cast<CBaseEntity **>(vptr) = pEntity;
-	vptr += sizeof(CBaseEntity *);
-	*reinterpret_cast<int *>(vptr) = count;
-	vptr += sizeof(int);
-	*reinterpret_cast<int *>(vptr) = type;
-	vptr += sizeof(int);
-	*reinterpret_cast<bool *>(vptr) = noSound;
-	//vptr += sizeof(bool);
-
-	int ret;
-	g_pGiveAmmo->Execute(vstk, &ret);
-
-	return ret;
 }
 
 size_t DM_StringToBytes(const char *str, unsigned char buffer[], size_t maxlength)
@@ -325,26 +273,6 @@ bool InitializeUtils(char *error, size_t maxlength)
 	g_pRoundRespawn = bintools->CreateCall(addr, CallConv_ThisCall, NULL, NULL, 0);
 	g_CallWrappers.push_back(g_pRoundRespawn);
 
-	/** WEAPON_GETSLOT */
-	g_pDmConf->GetOffset("Weapon_GetSlot", &offset);
-	pass[0].flags = PASSFLAG_BYVAL;
-	pass[0].size = sizeof(int);
-	pass[0].type = PassType_Basic;
-	pass[1].flags = PASSFLAG_BYVAL;
-	pass[1].size = sizeof(CBaseEntity *);
-	pass[1].type = PassType_Basic;
-	g_pWeaponGetSlot = bintools->CreateVCall(offset, 0, 0, &pass[1], &pass[0], 1);
-	g_CallWrappers.push_back(g_pWeaponGetSlot);
-
-	/** CSWEAPONDROP */
-	g_pDmConf->GetMemSig("CSWeaponDrop", &addr);
-	pass[0].flags = pass[1].flags = pass[2].flags  = PASSFLAG_BYVAL;
-	pass[0].type = pass[1].type = pass[2].type = PassType_Basic;
-	pass[0].size = sizeof(CBaseEntity *);
-	pass[1].size = pass[2].size = sizeof(bool);
-	g_pDropWeapon = bintools->CreateCall(addr, CallConv_ThisCall, NULL, pass, 3);
-	g_CallWrappers.push_back(g_pDropWeapon);
-
 	/** REMOVEALLITEMS */
 	g_pDmConf->GetOffset("RemoveAllItems", &offset);
 	pass[0].flags = PASSFLAG_BYVAL;
@@ -352,15 +280,6 @@ bool InitializeUtils(char *error, size_t maxlength)
 	pass[0].type = PassType_Basic;
 	g_pRemoveAllItems = bintools->CreateVCall(offset, 0, 0, NULL, pass, 1);
 	g_CallWrappers.push_back(g_pRemoveAllItems);
-
-	/** GIVEAMMO */
-	g_pDmConf->GetOffset("GiveAmmo", &offset);
-	pass[0].flags = pass[1].flags = pass[2].flags = pass[3].flags = PASSFLAG_BYVAL;
-	pass[0].size = pass[1].size = pass[2].size = sizeof(int);
-	pass[3].size = sizeof(bool);
-	pass[0].type = pass[1].type = pass[2].type = pass[3].type = PassType_Basic;
-	g_pGiveAmmo = bintools->CreateVCall(offset, 0, 0, &pass[3], pass, 3);
-	g_CallWrappers.push_back(g_pGiveAmmo);
 
 	/** PROPERTIES */
 	sm_sendprop_info_t prop;

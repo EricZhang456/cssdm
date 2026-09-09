@@ -44,7 +44,7 @@ List<ITimer *> g_RagdollTimers;
 class RagdollRemoval : public ITimedEvent
 {
 public:
-	ResultType OnTimer(ITimer *pTimer, void *pData)
+	ResultType OnTimer(ITimer *pTimer, void *pData) override
 	{
 		if (g_IsRunning)
 		{
@@ -67,7 +67,7 @@ public:
 		return Pl_Stop;
 	}
 
-	void OnTimerEnd(ITimer *pTimer, void *pData)
+	void OnTimerEnd(ITimer *pTimer, void *pData) override
 	{
 		delete static_cast<DMData *>(pData);
 	}
@@ -76,7 +76,7 @@ public:
 class PlayerSpawner : public ITimedEvent
 {
 public:
-	ResultType OnTimer(ITimer *pTimer, void *pData)
+	ResultType OnTimer(ITimer *pTimer, void *pData) override
 	{
 		if (!g_IsRunning)
 		{
@@ -107,7 +107,7 @@ public:
 		return Pl_Stop;
 	}
 
-	void OnTimerEnd(ITimer *pTimer, void *pData)
+	void OnTimerEnd(ITimer *pTimer, void *pData) override
 	{
 		DMData *data = static_cast<DMData *>(pData);
 		int client = data->index;
@@ -188,25 +188,6 @@ void OnClientDropWeapons(CBaseEntity *pEntity)
 		/* Block them from having a defuse kit so they don't drop it. */
 		DM_SetDefuseKit(pEntity, false);
 	}
-}
-
-void OnClientDroppedWeapon(CBaseEntity *pEntity, CBaseEntity *pWeapon)
-{
-	if (!g_IsRunning || !pWeapon || !DM_ShouldRemoveDrops())
-	{
-		return;
-	}
-
-	if (DM_AllowC4())
-	{
-		edict_t *pEdict = gameents->BaseEntityToEdict(pWeapon);
-		if (pEdict && strcmp(pEdict->GetClassName(), "weapon_c4") == 0)
-		{
-			return;
-		}
-	}
-
-	DM_RemoveEntity(pWeapon);
 }
 
 #define IMPLEMENT_EVENT(name) \
@@ -374,37 +355,3 @@ IMPLEMENT_EVENT(round_end)
 		player->is_spawned = false;
 	}
 }
-
-IMPLEMENT_EVENT(item_pickup)
-{
-	if (!g_IsRunning || DM_AllowC4())
-	{
-		return;
-	}
-
-	const char *weapon = event->GetString("item");
-	if (strcmp(weapon, "c4") != 0)
-	{
-		return;
-	}
-
-	int userid = event->GetInt("userid");
-	int client = playerhelpers->GetClientOfUserId(userid);
-	if (!client)
-	{
-		return;
-	}
-
-	dm_player_t *player = DM_GetPlayer(client);
-	if (!player || !player->pEntity)
-	{
-		return;
-	}
-
-	CBaseEntity *pWeapon = DM_GetWeaponFromSlot(player->pEntity, (int)WeaponType_C4);
-	if (pWeapon)
-	{
-		DM_DropWeapon(player->pEntity, pWeapon);
-	}
-}
-

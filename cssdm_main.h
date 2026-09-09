@@ -1,7 +1,7 @@
 /**
  * vim: set ts=4 :
  * ===============================================================
- * CS:S DM, Copyright (C) 2004-2007 AlliedModders LLC. 
+ * CS:S DM, Copyright (C) 2004-2007 AlliedModders LLC.
  * By David "BAILOPAN" Anderson
  * All rights reserved.
  * ===============================================================
@@ -10,17 +10,17 @@
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or (at
  * your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; see the file COPYING; if not, write to the
  * Free Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston,
  * MA 02110-1301 USA
- * 
+ *
  * Version: $Id$
  */
 
@@ -34,7 +34,6 @@
  */
 
 #include <smsdk_ext.h>
-#include <IBinTools.h>
 
 /**
  * @brief Sample implementation of the SDK Extension.
@@ -43,16 +42,18 @@
 class Deathmatch : public SDKExtension
 {
 public:
-	virtual bool SDK_OnLoad(char *error, size_t maxlength, bool late);
-	virtual void SDK_OnUnload();
-	virtual void SDK_OnAllLoaded();
+	bool SDK_OnLoad(char *error, size_t maxlength, bool late) override;
+	void SDK_OnUnload() override;
+	void SDK_OnAllLoaded() override;
 	//virtual void SDK_OnPauseChange(bool paused);
-	virtual bool QueryRunning(char *error, size_t maxlength);
-	bool QueryInterfaceDrop(SMInterface *pInterface);
-	void NotifyInterfaceDrop(SMInterface *pInterface);
-	const char *GetExtensionVerString();
+	bool QueryRunning(char *error, size_t maxlength) override;
+	void OnCoreMapStart(edict_t *pEdictList, int edictCount, int clientMax) override;
+	void OnCoreMapEnd() override;
+	bool QueryInterfaceDrop(SMInterface *pInterface) override;
+	void NotifyInterfaceDrop(SMInterface *pInterface) override;
+	const char *GetExtensionVerString() override;
 public:
-	virtual bool SDK_OnMetamodLoad(ISmmAPI *ismm, char *error, size_t maxlength, bool late);
+	bool SDK_OnMetamodLoad(ISmmAPI *ismm, char *error, size_t maxlength, bool late) override;
 	//virtual bool SDK_OnMetamodUnload(char *error, size_t maxlength);
 	//virtual bool SDK_OnMetamodPauseChange(bool paused, char *error, size_t maxlength);
 };

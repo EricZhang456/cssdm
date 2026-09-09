@@ -22,8 +22,9 @@
 
 #define CSSDM_MAX_WEAPONS		32
 
-#define CSSDM_TEAM_T			2
-#define CSSDM_TEAM_CT			3
+#include <sourcemod>
+#include <sdktools>
+#include <cstrike>
 
 enum DmWeaponType
 {
@@ -145,7 +146,10 @@ native void DM_GetWeaponName(int id, char[] name, int maxlength);
  * @param type			Weapon slot type.
  * @return				Entity index, or -1 for none.
  */
-native int DM_GetClientWeapon(int client, DmWeaponType type);
+stock int DM_GetClientWeapon(int client, DmWeaponType type)
+{
+	return GetPlayerWeaponSlot(client, view_as<int>(type));
+}
 
 /**
  * Drops a client's weapon.  CS:S DM removes dropped weapons from the world.
@@ -155,7 +159,33 @@ native int DM_GetClientWeapon(int client, DmWeaponType type);
  * @noreturn
  * @error				Client index invalid or not in game; weapon entity invalid.
  */
-native void DM_DropWeapon(int client, int entity);
+stock void DM_DropWeapon(int client, int entity)
+{
+	if (client <= 0 || client > MaxClients)
+	{
+		ThrowError("Invalid client index %d", client);
+	}
+
+	if (!IsClientInGame(client))
+	{
+		ThrowError("Client %d is not in game", client);
+	}
+
+	if (!IsValidEntity(entity))
+	{
+		ThrowError("Entity %d is not a valid entity", entity);
+	}
+
+	int owner = GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity");
+	if (client != owner)
+	{
+		AcceptEntityInput(entity, "Kill");
+		return;
+	}
+
+	CS_DropWeapon(client, entity, true, true);
+	AcceptEntityInput(entity, "Kill");
+}
 
 /**
  * Strips all items from a bot, excluding their player suit.
@@ -204,7 +234,20 @@ native bool DM_IsClientAlive(int client);
  * @return				Actual ammo amount given.
  * @error				Invalid client index or client not in game.
  */
-native int DM_GiveClientAmmo(int client, int type, int count, bool noSound=false);
+stock int DM_GiveClientAmmo(int client, int type, int count, bool noSound=false)
+{
+	if (client <= 0 || client > MaxClients)
+	{
+		ThrowError("Invalid client index %d", client);
+	}
+
+	if (!IsClientInGame(client))
+	{
+		ThrowError("Client %d is not in game", client);
+	}
+
+	return GivePlayerAmmo(client, count, type, noSound);
+}
 
 /**
  * Do not edit below this line!

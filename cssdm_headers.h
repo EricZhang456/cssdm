@@ -29,11 +29,13 @@
 
 #include <sm_platform.h>
 #include <IBinTools.h>
+#include <ISDKTools.h>
 #include "smsdk_ext.h"
 #include <iplayerinfo.h>
 #include <filesystem.h>
 
 extern IBinTools *bintools;
+extern ISDKTools* sdktools;
 extern IPlayerInfoManager *playerinfomngr;
 extern IBaseFileSystem *basefilesystem;
 extern IGameConfig *g_pDmConf;

@@ -174,58 +174,6 @@ static cell_t DMN_StripBotItems(IPluginContext *pContext, const cell_t *params)
 	return 1;
 }
 
-static cell_t DMN_GetClientWeapon(IPluginContext *pContext, const cell_t *params)
-{
-	if (params[1] < 1 || params[1] > gpGlobals->maxClients)
-	{
-		return pContext->ThrowNativeError("Invalid client index %d", params[1]);
-	}
-
-	dm_player_t *player = DM_GetPlayer(params[1]);
-	if (!player->pEntity)
-	{
-		return pContext->ThrowNativeError("Client %d is not in game", params[1]);
-	}
-
-	CBaseEntity *pEntity = DM_GetWeaponFromSlot(player->pEntity, params[2]);
-	if (!pEntity)
-	{
-		return -1;
-	}
-
-	edict_t *pEdict = gameents->BaseEntityToEdict(pEntity);
-	if (!pEdict)
-	{
-		return -1;
-	}
-
-	return gamehelpers->IndexOfEdict(pEdict);
-}
-
-static cell_t DMN_DropWeapon(IPluginContext *pContext, const cell_t *params)
-{
-	if (params[1] < 1 || params[1] > gpGlobals->maxClients)
-	{
-		return pContext->ThrowNativeError("Invalid client index %d", params[1]);
-	}
-
-	dm_player_t *player = DM_GetPlayer(params[1]);
-	if (!player->pEntity)
-	{
-		return pContext->ThrowNativeError("Client %d is not in game", params[1]);
-	}
-
-	CBaseEntity *pWeapon = DM_GetBaseEntity(params[2]);
-	if (!pWeapon)
-	{
-		return pContext->ThrowNativeError("Entity %d is not a valid entity", params[2]);
-	}
-
-	DM_DropWeapon(player->pEntity, pWeapon);
-
-	return 1;
-}
-
 static cell_t DMN_IsRunning(IPluginContext *pContext, const cell_t *params)
 {
 	return g_IsRunning ? true : false;
@@ -273,22 +221,6 @@ static cell_t DMN_IsClientAlive(IPluginContext *pContext, const cell_t *params)
 	return DM_IsPlayerAlive(params[1]) ? 1 : 0;
 }
 
-static cell_t DMN_GiveAmmo(IPluginContext *pContext, const cell_t *params)
-{
-	if (params[1] < 1 || params[1] > gpGlobals->maxClients)
-	{
-		return pContext->ThrowNativeError("Invalid client index %d", params[1]);
-	}
-
-	dm_player_t *player = DM_GetPlayer(params[1]);
-	if (!player->pEntity)
-	{
-		return pContext->ThrowNativeError("Client %d is not in game", params[1]);
-	}
-
-	return DM_GiveAmmo(player->pEntity, params[2], params[3], params[4] ? true : false);
-}
-
 sp_nativeinfo_t g_BaseNatives[] = 
 {
 	{"DM_GetSpawnMethod",		DMN_GetSpawnMethod},
@@ -296,13 +228,10 @@ sp_nativeinfo_t g_BaseNatives[] =
 	{"DM_GetWeaponType",		DMN_GetWeaponType},
 	{"DM_StripBotItems",		DMN_StripBotItems},
 	{"DM_GetWeaponClassname",	DMN_GetWeaponClassname},
-	{"DM_GetClientWeapon",		DMN_GetClientWeapon},
-	{"DM_DropWeapon",			DMN_DropWeapon},
 	{"DM_GetWeaponName",		DMN_GetWeaponName},
 	{"DM_IsRunning",			DMN_IsRunning},
 	{"DM_GetSpawnWaitTime",		DMN_GetSpawnWaitTime},
 	{"DM_RespawnClient",		DMN_RespawnClient},
 	{"DM_IsClientAlive",		DMN_IsClientAlive},
-	{"DM_GiveClientAmmo",		DMN_GiveAmmo},
 	{NULL,						NULL},
 };
