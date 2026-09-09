@@ -30,6 +30,8 @@
 #include "sm_platform.h"
 #include "cssdm_includesdk.h"
 
+// Don't patch anything on CSGO
+#if SOURCE_ENGINE != SE_CSGO
 SH_DECL_MANUALHOOK2(CGameRules_IPointsForKill, 62+EXTRA_VTBL_OFFSET, 0, 0, int, CBasePlayer *, CBasePlayer *);
 
 #if defined PLATFORM_64BITS
@@ -150,19 +152,6 @@ bool DM_Prepare_FFA(char *error, size_t maxlength)
 		return false;
 	}
 
-#if SOURCE_ENGINE == SE_CSGO
-	if (!g_pDmConf->GetOffset("TakeDmgPatch2", &g_takedmg_offset[1])
-		|| !g_takedmg_offset[1])
-	{
-		snprintf(error, maxlength, "Could not find TakeDmgPatch2 offset");
-		return false;
-	}
-	if (!DM_FFA_LoadPatch("TakeDmgPatch2", &g_takedmg_patch[1], error, maxlength))
-	{
-		return false;
-	}
-#endif
-
 	/* Load the GameRules pointer */
 	if (!sdktools)
 	{
@@ -211,9 +200,6 @@ bool DM_Patch_FFA()
 
 	DM_ApplyPatch(g_lagcomp_addr, g_lagcomp_offset, &g_lagcomp_patch, &g_lagcomp_restore);
 	DM_ApplyPatch(g_takedmg_addr, g_takedmg_offset[0], &g_takedmg_patch[0], &g_takedmg_restore[0]);
-#if SOURCE_ENGINE == SE_CSGO
-	DM_ApplyPatch(g_takedmg_addr, g_takedmg_offset[1], &g_takedmg_patch[1], &g_takedmg_restore[1]);
-#endif
 	DM_ApplyPatch(g_domrev_addr, g_domrev_offset, &g_domrev_patch, &g_domrev_restore);
 
 	// needs a new gamerules address on every map load
@@ -244,9 +230,6 @@ bool DM_Unpatch_FFA()
 
 	DM_ApplyPatch(g_lagcomp_addr, g_lagcomp_offset, &g_lagcomp_restore, NULL);
 	DM_ApplyPatch(g_takedmg_addr, g_takedmg_offset[0], &g_takedmg_restore[0], NULL);
-#if SOURCE_ENGINE == SE_CSGO
-	DM_ApplyPatch(g_takedmg_addr, g_takedmg_offset[1], &g_takedmg_restore[1], NULL);
-#endif
 	DM_ApplyPatch(g_domrev_addr, g_domrev_offset, &g_domrev_restore, NULL);
 
 	g_FFA_Patched = false;
@@ -263,3 +246,4 @@ bool DM_FFA_IsPrepared()
 {
 	return g_FFA_Prepared;
 }
+#endif

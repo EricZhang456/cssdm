@@ -33,10 +33,18 @@
 
 CDetour *drpwpns_callback = NULL;
 
+#if SOURCE_ENGINE == SE_CSGO
+DETOUR_DECL_MEMBER3(DetourDrpWpns, void, bool, fromDeath, bool, killedByEnemy, CBaseEntity *, pKiller)
+#else
 DETOUR_DECL_MEMBER2(DetourDrpWpns, void, bool, unknown1, bool, unknown2)
+#endif
 {
 	OnClientDropWeapons(reinterpret_cast<CBaseEntity *>(this));
+#if SOURCE_ENGINE == SE_CSGO
+	DETOUR_MEMBER_CALL(DetourDrpWpns)(fromDeath, killedByEnemy, pKiller);
+#else
 	DETOUR_MEMBER_CALL(DetourDrpWpns)(unknown1, unknown2);
+#endif
 }
 
 void InitDropWeaponsDetour()

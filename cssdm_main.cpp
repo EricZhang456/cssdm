@@ -148,11 +148,13 @@ bool Startup(char *error, size_t maxlength)
 
 	DM_InitCallbacks();
 
+#if SOURCE_ENGINE != SE_CSGO
 	char ffa_error[255];
 	if (!DM_Prepare_FFA(ffa_error, sizeof(ffa_error)))
 	{
 		g_pSM->LogError(myself, "FFA will not work: %s", ffa_error);
 	}
+#endif
 
 	DM_InitDetours();
 
