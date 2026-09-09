@@ -279,7 +279,7 @@ public void DM_OnClientSpawned(int client)
 			GiveHelmet(client);
 		}
 		GiveGrenades(client, g_Flashes, g_HEs, g_Smokes, g_Decoy);
-		if (g_NightVision)
+		if (!g_bIsGo && g_NightVision)
 		{
 			GiveNightVision(client);
 		}
