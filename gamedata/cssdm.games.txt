@@ -49,8 +49,15 @@
 			}
 			"RemoveAllItems"
 			{
-				"windows"		"388"
-				"linux"			"389"
+				"windows"		"390"
+				"linux"			"391"
+				"linux64"		"391"
+			}
+			"GoToIntermission"
+			{
+				"windows"		"179"
+				"linux"			"180"
+				"linux64"		"180"
 			}
 		}
 		"Signatures"
