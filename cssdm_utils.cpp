@@ -39,7 +39,6 @@ ICallWrapper *g_pRemoveAllItems = NULL;
 ICallWrapper *g_pGiveAmmo = NULL;
 int g_RagdollOffset = 0;
 int g_LifeStateOffset = 0;
-int g_DefuserOffset = 0;
 
 void DM_ProtectMemory(void *addr, int length, int prot);
 
@@ -182,16 +181,6 @@ void DM_RemoveAllItems(CBaseEntity *pEntity, bool removeSuit)
 	g_pRemoveAllItems->Execute(vstk, NULL);
 }
 
-void DM_SetDefuseKit(CBaseEntity *pEntity, bool defuseKit)
-{
-	if (!g_DefuserOffset)
-	{
-		return;
-	}
-
-	*reinterpret_cast<bool *>(reinterpret_cast<unsigned char *>(pEntity) + g_DefuserOffset) = defuseKit;
-}
-
 size_t DM_StringToBytes(const char *str, unsigned char buffer[], size_t maxlength)
 {
 	size_t real_bytes = 0;
@@ -295,12 +284,6 @@ bool InitializeUtils(char *error, size_t maxlength)
 		return false;
 	}
 	g_LifeStateOffset = prop.actual_offset;
-	if(!gamehelpers->FindSendPropInfo("CCSPlayer", "m_bHasDefuser", &prop))
-	{
-		snprintf(error, maxlength, "Failed to get prop info for m_bHasDefuser");
-		return false;
-	}
-	g_DefuserOffset = prop.actual_offset;
 
 	return true;
 }

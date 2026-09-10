@@ -31,7 +31,9 @@
 unsigned int DM_GetBodyStayTime();
 float DM_GetRespawnWait();
 bool DM_IsEnabled();
+#if SOURCE_ENGINE != SE_CSGO
 bool DM_IsFFAEnabled();
+#endif
 const char *DM_GetSpawnMethod();
 
 /* Internal API */

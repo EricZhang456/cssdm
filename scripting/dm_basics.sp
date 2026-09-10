@@ -23,6 +23,7 @@
 
 #pragma semicolon 1
 #include <sourcemod>
+#include <sdkhooks>
 #include <sdktools>
 #include <cstrike>
 #include <cssdm>
@@ -38,6 +39,7 @@ ConVar mp_timelimit;
 Handle g_ChangeMapTimer = INVALID_HANDLE;
 bool g_AmmoHooks = false;
 int g_ActiveWepOffs = -1;
+bool g_IsCSGO = false;
 
 /* Player stuff */
 float g_DeathTimes[MAXPLAYERS+1];
@@ -76,6 +78,13 @@ public void OnPluginStart()
 	AddCommandListener(Cmd_WeaponDrop, "drop");
 
 	g_ActiveWepOffs = FindSendPropInfo("CCSPlayer", "m_hActiveWeapon");
+
+	char game[128];
+	GetGameFolderName(game, sizeof(game));
+	if (StrEqual(game, "csgo", false))
+	{
+		g_IsCSGO = true;
+	}
 
 	GameData gamedata = new GameData("cssdm.games");
 	if (gamedata == null)
@@ -138,8 +147,35 @@ public void CvarChange_RefillAmmo(ConVar cvar, const char[] oldvalue, const char
 	}
 }
 
+public void OnEntityCreated(int entity, const char[] classname)
+{
+	if (!DM_IsRunning())
+	{
+		return;
+	}
+	if (StrEqual(classname, "item_defuser") || StrEqual(classname, "item_cutters"))
+	{
+		SDKHook(entity, SDKHook_SpawnPost, Hook_KillDefuser);
+	}
+}
+
+public void Hook_KillDefuser(int entity)
+{
+	if (IsValidEntity(entity))
+	{
+		AcceptEntityInput(entity, "Kill");
+	}
+}
+
 public Action CS_OnCSWeaponDrop(int client, int weaponIndex, bool donated)
 {
+	// On CSGO, we handle this under the SDKHook since sometimes this won't
+	// get called when a client dies.
+	if (g_IsCSGO)
+	{
+		return Plugin_Continue;
+	}
+
 	if (!DM_IsRunning() || !cssdm_remove_drops.BoolValue)
 	{
 		return Plugin_Continue;
@@ -156,6 +192,31 @@ public Action CS_OnCSWeaponDrop(int client, int weaponIndex, bool donated)
 	}
 
 	return Plugin_Handled;
+}
+
+public void Hook_OnWeaponDropPost(int client, int weapon)
+{
+	if (!DM_IsRunning() || !cssdm_remove_drops.BoolValue)
+	{
+		return;
+	}
+
+	if (!IsValidEntity(weapon))
+	{
+		return;
+	}
+
+	if (cssdm_allow_c4.BoolValue)
+	{
+		char classname[64];
+		GetEntityClassname(weapon, classname, sizeof(classname));
+		if (StrEqual(classname, "weapon_c4"))
+		{
+			return;
+		}
+	}
+
+	AcceptEntityInput(weapon, "Kill");
 }
 
 public void Event_CheckDepleted(Event event, const char[] name, bool dontBroadcast)
@@ -210,6 +271,14 @@ public Action Cmd_WeaponDrop(int client, const char[] command, int argc)
 	{
 		return Plugin_Continue;
 	}
+
+	char clientWeapon[64];
+	GetClientWeapon(client, clientWeapon, sizeof(clientWeapon));
+	if (StrEqual(clientWeapon, "weapon_c4"))
+	{
+		return Plugin_Continue;
+	}
+
 	return Plugin_Handled;
 }
 
@@ -283,6 +352,11 @@ public void OnClientPutInServer(int client)
 	}
 
 	g_bHasNoAmmoInClip1[client] = false;
+
+	if (g_IsCSGO)
+	{
+		SDKHook(client, SDKHook_WeaponDropPost, Hook_OnWeaponDropPost);
+	}
 }
 
 public Action DM_OnClientDeath(int client)

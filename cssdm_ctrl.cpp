@@ -135,11 +135,13 @@ bool DM_Disable()
 
 	g_IsRunning = false;
 
+#if SOURCE_ENGINE != SE_CSGO
 	/* If FFA is enabled, we must unpatch it. */
 	if (DM_FFA_IsPatched())
 	{
 		DM_Unpatch_FFA();
 	}
+#endif
 
 	DM_OnShutdown();
 
@@ -157,6 +159,7 @@ bool DM_Enable()
 
 	DM_OnStartup();
 
+#if SOURCE_ENGINE != SE_CSGO
 	/* If FFA should be enabled, patch it. */
 	if (cssdm_ffa_enabled.GetInt() != 0
 		&& DM_FFA_IsPrepared()
@@ -164,6 +167,7 @@ bool DM_Enable()
 	{
 		DM_Patch_FFA();
 	}
+#endif
 
 	return true;
 }

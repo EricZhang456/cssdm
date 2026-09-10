@@ -31,7 +31,6 @@
 #include "cssdm_headers.h"
 #include "cssdm_callbacks.h"
 #include "cssdm_weapons.h"
-#include "cssdm_detours.h"
 #include <sh_list.h>
 
 // TODO : Fix passing clients around in timers
@@ -178,15 +177,6 @@ void OnClientCommand_Post(edict_t *edict, const CCommand &args)
 
 		/* Respawn! */
 		DM_SchedRespawn(client);
-	}
-}
-
-void OnClientDropWeapons(CBaseEntity *pEntity)
-{
-	if (g_IsRunning)
-	{
-		/* Block them from having a defuse kit so they don't drop it. */
-		DM_SetDefuseKit(pEntity, false);
 	}
 }
 

@@ -45,12 +45,14 @@ ConVar cssdm_enabled("cssdm_enabled",
 					 "Sets whether CS:S DM is enabled",
 					 false, 0.0f, false, 0.0f,
 					 ChangeStatus);
+#if SOURCE_ENGINE != SE_CSGO
 ConVar cssdm_ffa_enabled("cssdm_ffa_enabled", 
 						 "0", 
 						 FCVAR_NOTIFY, 
 						 "Sets whether Free-For-All mode is enabled",
 						 false, 0.0f, false, 0.0f,
 						 ChangeFFAStatus);
+#endif
 ConVar cssdm_spawn_method("cssdm_spawn_method",
 						  "preset",
 						  0,
@@ -83,6 +85,7 @@ static void ChangeStatus(IConVar *cvar, const char *value, float flOldValue)
 	}
 }
 
+#if SOURCE_ENGINE != SE_CSGO
 static void ChangeFFAStatus(IConVar *cvar, const char *value, float flOldValue)
 {
 	if (cssdm_ffa_enabled.GetInt() && !DM_FFA_IsPatched() && DM_FFA_IsPrepared())
@@ -92,6 +95,7 @@ static void ChangeFFAStatus(IConVar *cvar, const char *value, float flOldValue)
 		DM_Unpatch_FFA();
 	}
 }
+#endif
 
 static void ChangeSpawnStatus(IConVar *cvar, const char *value, float flOldValue)
 {
@@ -123,7 +127,9 @@ bool DM_IsEnabled()
 	return (cssdm_enabled.GetInt() != 0);
 }
 
+#if SOURCE_ENGINE != SE_CSGO
 bool DM_IsFFAEnabled()
 {
 	return (cssdm_ffa_enabled.GetInt() != 0);
 }
+#endif

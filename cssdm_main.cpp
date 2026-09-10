@@ -34,7 +34,6 @@
 #include "cssdm_ffa.h"
 #include "cssdm_callbacks.h"
 #include "cssdm_weapons.h"
-#include "cssdm_detours.h"
 #include "cssdm_version.h"
 
 SH_DECL_HOOK0_void(IServerGameDLL, DLLShutdown, SH_NOATTRIB, false);
@@ -94,7 +93,6 @@ bool Deathmatch::SDK_OnLoad(char *error, size_t maxlength, bool late)
 	void *addr;
 	int offset;
 	VERIFY_SIGNATURE("RoundRespawn");
-	VERIFY_SIGNATURE("DropWeapons");
 	VERIFY_OFFSET("RemoveAllItems");
 
 	if (!DM_ParseWeapons(error, maxlength))
@@ -148,13 +146,13 @@ bool Startup(char *error, size_t maxlength)
 
 	DM_InitCallbacks();
 
+#if SOURCE_ENGINE != SE_CSGO
 	char ffa_error[255];
 	if (!DM_Prepare_FFA(ffa_error, sizeof(ffa_error)))
 	{
 		g_pSM->LogError(myself, "FFA will not work: %s", ffa_error);
 	}
-
-	DM_InitDetours();
+#endif
 
 	return InitializeUtils(error, maxlength);
 }
@@ -181,7 +179,6 @@ void Shutdown()
 	DM_Disable();
 
 	/* Destroy various internal things */
-	DM_ShutdownDetours();
 	DM_ShutdownCallbacks();
 	DM_FreeWeapons();
 	ShutdownUtils();

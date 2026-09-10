@@ -279,7 +279,7 @@ public void DM_OnClientSpawned(int client)
 			GiveHelmet(client);
 		}
 		GiveGrenades(client, g_Flashes, g_HEs, g_Smokes, g_Decoy);
-		if (g_NightVision)
+		if (!g_bIsGo && g_NightVision)
 		{
 			GiveNightVision(client);
 		}
@@ -380,14 +380,14 @@ public Action PlayerPostSpawn(Handle timer, int client)
 			DM_GetWeaponClassname(index, classname, sizeof(classname));
 			GivePlayerItem(client, classname);
 		}
-		if (g_BotDefuseKits && GetClientTeam(client) == CS_TEAM_CT)
+		if (GetClientTeam(client) == CS_TEAM_CT)
 		{
-			GivePlayerItem(client, "item_defuser");
+			GiveDefuserToClient(client, g_BotDefuseKits);
 		}
 	} else {
-		if (g_DefuseKits && GetClientTeam(client) == CS_TEAM_CT)
+		if (GetClientTeam(client) == CS_TEAM_CT)
 		{
-			GivePlayerItem(client, "item_defuser");
+			GiveDefuserToClient(client, g_DefuseKits);
 		}
 
 		int numGiven = 0;
@@ -427,6 +427,26 @@ public Action PlayerPostSpawn(Handle timer, int client)
 	}
 
 	return Plugin_Stop;
+}
+
+void GiveDefuserToClient(int client, bool give)
+{
+	if (give)
+	{
+		if (GetEntProp(client, Prop_Send, "m_bHasDefuser") == 0)
+		{
+			SetEntProp(client, Prop_Send, "m_bHasDefuser", 1);
+		}
+	}
+	else
+	{
+		// Some game modes on CSGO will give the client a defuser on spawn.
+		// Strip their defuser when needed.
+		if (GetEntProp(client, Prop_Send, "m_bHasDefuser") == 1)
+		{
+			SetEntProp(client, Prop_Send, "m_bHasDefuser", 0);
+		}
+	}
 }
 
 public Action OnClientSayCommand(int client, const char[] command, const char[] sArgs)

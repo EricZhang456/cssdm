@@ -148,7 +148,7 @@ bool LoadMapConfig()
 
 	delete file;
 
-	LogMessage("Preset spawn points loaded (number %d) (map %s)", g_SpawnCount, map);
+	LogMessage("Preset spawn points loaded (number %d) (map %s)", g_SpawnCount, mapDisplay);
 
 	return true;
 }

@@ -61,7 +61,6 @@ class CCommand;
 
 void DM_ClearRagdollTimers();
 void OnClientCommand_Post(edict_t *edict, const CCommand &args);
-void OnClientDropWeapons(CBaseEntity *pEntity);
 
 class DMData
 {

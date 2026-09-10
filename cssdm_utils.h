@@ -59,7 +59,6 @@ size_t DM_StringToBytes(const char *str, unsigned char buffer[], size_t maxlengt
 void DM_ApplyPatch(void *address, int offset, const dmpatch_t *patch, dmpatch_t *restore);
 void DM_RemoveAllItems(CBaseEntity *pEntity, bool removeSuit);
 void DM_SetMemPatchable(void *address, size_t size);
-void DM_SetDefuseKit(CBaseEntity *pEntity, bool defuseKit);
 
 /** "Internal" functions */
 CBaseEntity *DM_GetAndClearRagdoll(CBaseEntity *pEntity, int &serial);
