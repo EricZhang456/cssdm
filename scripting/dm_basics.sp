@@ -147,6 +147,26 @@ public void CvarChange_RefillAmmo(ConVar cvar, const char[] oldvalue, const char
 	}
 }
 
+public void OnEntityCreated(int entity, const char[] classname)
+{
+	if (!DM_IsRunning())
+	{
+		return;
+	}
+	if (StrEqual(classname, "item_defuser") || StrEqual(classname, "item_cutters"))
+	{
+		SDKHook(entity, SDKHook_SpawnPost, Hook_KillDefuser);
+	}
+}
+
+public void Hook_KillDefuser(int entity)
+{
+	if (IsValidEntity(entity))
+	{
+		AcceptEntityInput(entity, "Kill");
+	}
+}
+
 public Action CS_OnCSWeaponDrop(int client, int weaponIndex, bool donated)
 {
 	// On CSGO, we handle this under the SDKHook since sometimes this won't
