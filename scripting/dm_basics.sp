@@ -271,6 +271,14 @@ public Action Cmd_WeaponDrop(int client, const char[] command, int argc)
 	{
 		return Plugin_Continue;
 	}
+
+	char clientWeapon[64];
+	GetClientWeapon(client, clientWeapon, sizeof(clientWeapon));
+	if (StrEqual(clientWeapon, "weapon_c4"))
+	{
+		return Plugin_Continue;
+	}
+
 	return Plugin_Handled;
 }
 
