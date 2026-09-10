@@ -63,7 +63,6 @@ class ExtensionConfig(object):
 		self.sm_root = None
 		self.sm_bin_root = None
 		self.spcomp = None
-		self.libsafetyhook = []
 		self.all_targets = []
 		self.target_archs = set()
 
@@ -444,20 +443,6 @@ class ExtensionConfig(object):
 		else:
 			raise Exception("Could not find a suitable copy of spcomp in SourceMod binary root")
 
-	def add_cdetour(self, binary):
-		binary.sources += [os.path.join(self.sm_root, 'public', 'CDetour', 'detours.cpp')]
-		binary.compiler.cxxincludes += [os.path.join(self.sm_root, 'public', 'safetyhook', 'include')]
-		for task in self.libsafetyhook:
-			if task.target.arch == binary.compiler.target.arch:
-				binary.compiler.linkflags += [task.binary]
-				return
-		raise Exception('No suitable SafetyHook build was found.')
-
-class SafetyHookShim:
-	def __init__(self, ext):
-		self.all_targets = ext.all_targets
-		self.libsafetyhook = []
-
 Extension = ExtensionConfig()
 Extension.detectSDKs()
 Extension.find_spcomp()
@@ -471,16 +456,6 @@ Extension.generated_headers = builder.Build(
 # This will clone the list and each cxx object as we recurse, preventing child
 # scripts from messing up global state.
 builder.targets = builder.CloneableList(Extension.all_targets)
-
-SafetyHook = SafetyHookShim(Extension)
-safetyhook_build_script = os.path.join(Extension.sm_root, "public", "safetyhook", "AMBuilder")
-if not os.path.isfile(safetyhook_build_script):
-	raise Exception("Cannot file safetyhook build script")
-old_source_path = builder.cm.sourcePath
-builder.cm.sourcePath = os.path.dirname(safetyhook_build_script)
-builder.Build('AMBuilder', { 'SafetyHook': SafetyHook })
-builder.cm.sourcePath = old_source_path
-Extension.libsafetyhook = SafetyHook.libsafetyhook
 
 BuildScripts = [
 	'AMBuilder',
