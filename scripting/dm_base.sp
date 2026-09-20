@@ -641,7 +641,7 @@ public int Native_RespawnClient(Handle plugin, int numParams)
 	}
 
 	// this will probably cause some race condition, but we don't this param anyways
-	int fullRespawn = GetNativeCell(2);
+	bool fullRespawn = GetNativeCell(2);
 	if (!fullRespawn)
 	{
 		g_SkipNextPlayerSpawnCallback = true;
