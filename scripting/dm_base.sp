@@ -478,12 +478,18 @@ public void Event_PlayerSpawn(Event event, const char[] name, bool dontBroadcast
 	}
 
 	int client = GetClientOfUserId(event.GetInt("userid"));
-	// IsClientObserver will always return false on css for some reason
-	bool isClientObserver = GetClientTeam(client) != CS_TEAM_T && GetClientTeam(client) != CS_TEAM_CT;
-	if (client < 0 || !IsClientInGame(client) || isClientObserver)
+	if (client < 0 || !IsClientInGame(client))
 	{
 		return;
 	}
+
+	// IsClientObserver will always return false on css for some reason
+	bool isClientObserver = GetClientTeam(client) != CS_TEAM_T && GetClientTeam(client) != CS_TEAM_CT;
+	if (isClientObserver)
+	{
+		return;
+	}
+
 
 	KillPlayerRespawnTimer(client);
 
