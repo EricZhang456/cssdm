@@ -46,7 +46,7 @@ class MemoryPatch
 
 		let baseAddress = this._address + this._offset;
 
-		for (int i = 0; i < payloadLen; i++)
+		for (let i = 0; i < payloadLen; i++)
 		{
 			this._payload[i] = StringToInt(bytes[i + 1], 16);
 			this._restore[i] = LoadFromAddress(baseAddress + view_as<Address>(i), NumberType_Int8);
@@ -61,7 +61,7 @@ class MemoryPatch
 		}
 
 		let baseAddress = this._address + this._offset;
-		for (int i = 0; i < this._payload.size; i++)
+		for (let i = 0; i < this._payload.size; i++)
 		{
 			StoreToAddress(baseAddress + i, this._payload[i], NumberType_Int8);
 		}
@@ -76,7 +76,7 @@ class MemoryPatch
 		}
 
 		let baseAddress = this._address + this._offset;
-		for (int i = 0; i < this._restore.size; i++)
+		for (let i = 0; i < this._restore.size; i++)
 		{
 			StoreToAddress(baseAddress + i, this._restore[i], NumberType_Int8);
 		}
