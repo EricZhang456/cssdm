@@ -33,7 +33,7 @@ class MemoryPatch
 		}
 
 		char bytesBuffer[PATCH_MAX_BYTES * PATCH_BYTE_SPLIT_LEN * PATCH_BYTE_LEN + 1],
-			bytes [PATCH_MAX_BYTES][PATCH_BYTE_LEN];
+			bytes[PATCH_MAX_BYTES][PATCH_BYTE_LEN];
 		if (!gamedata.GetKeyValue(patchKey, bytesBuffer, sizeof(bytesBuffer)))
 		{
 			SetFailState("FFA will not work: Could not load \"%s\" memory patch!", patchKey);
