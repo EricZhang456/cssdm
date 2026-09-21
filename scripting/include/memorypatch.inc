@@ -1,109 +1,93 @@
-// based on https://github.com/Kenzzer/MemoryPatch/blob/master/addons/sourcemod/scripting/include/memorypatch.inc
+#include <sourcemod>
 
 #define PATCH_MAX_BYTES 64
 #define PATCH_BYTE_LEN 3
 #define PATCH_BYTE_SPLIT "\\x"
 #define PATCH_BYTE_SPLIT_LEN 2
 
-enum
+class MemoryPatch
 {
-	MemoryIndex_Address = 0,
-	MemoryIndex_PayloadCount,
-	MemoryIndex_Patched,
-	MemoryIndex_Max
-};
+	private bool _enabled;
+	private Address _address;
+	private int _offset;
+	private int[] _payload;
+	private int[] _restore;
 
-methodmap MemoryPatch < ArrayList
-{
-	public MemoryPatch(GameData hGameData = null, const char[] addressKey, const char[] patchKey, const char[] offsetKey)
+	MemoryPatch(GameData gamedata, const char[] addressKey, const char[] patchKey, const char[] offsetKey)
 	{
-		if (hGameData == null)
+		if (gamedata == null)
 		{
-			LogError("Attempted to create a MemoryPatch without gamedata.");
-			return null;
-		}
-		
-		ArrayList patch = new ArrayList();
-		
-		Address address = hGameData.GetMemSig(addressKey);
-		if (address == Address_Null)
-		{
-			delete patch;
-			LogError("FFA will not work: Could not find \"%s\" signature!", addressKey);
-			return null;
+			SetFailState("Provided gamedata is null")
 		}
 
-		int offset = hGameData.GetOffset(offsetKey);
-		if (offset == -1)
+		this._address = gamedata.GetMemSig(addressKey);
+		if (this._address == Address_Null)
 		{
-			delete patch;
-			LogError("FFA will not work: Could not find \"%s\" offset!", offsetKey);
-			return null;
-		}
-		Address finalAddress = address + view_as<Address>(offset);
-		
-		char sBytesBuffer[PATCH_MAX_BYTES*PATCH_BYTE_SPLIT_LEN*PATCH_BYTE_LEN+1], sBytes[PATCH_MAX_BYTES][PATCH_BYTE_LEN];
-		if (!hGameData.GetKeyValue(patchKey, sBytesBuffer, sizeof(sBytesBuffer)))
-		{
-			delete patch;
-			LogError("FFA will not work: Could not load \"%s\" memory patch!", patchKey);
-			return null;
-		}
-		
-		int iPayloadCount = ExplodeString(sBytesBuffer, PATCH_BYTE_SPLIT, sBytes, PATCH_MAX_BYTES, PATCH_BYTE_LEN);
-		
-		patch.Push(finalAddress); // MemoryIndex_Address
-		patch.Push(iPayloadCount-1); // MemoryIndex_PayloadCount
-		patch.Push(false); // MemoryIndex_Patched
-		for (int i = 1; i < iPayloadCount; i++)
-		{
-			patch.Push(StringToInt(sBytes[i], 16)); // Push the bytes
+			SetFailState("FFA will not work: Could not find \"%s\" signature!", addressKey);
 		}
 
-		return view_as<MemoryPatch>(patch);
-	}
-	
-	property bool bEnabled
-	{
-		public get()
+		this._offset = gamedata.GetOffset(offsetKey);
+		if (this._offset == -1)
 		{
-			return this.Get(MemoryIndex_Patched);
+			SetFailState("FFA will not work: Could not find \"%s\" offset!", offsetKey);
+		}
+
+		char bytesBuffer[PATCH_MAX_BYTES * PATCH_BYTE_SPLIT_LEN * PATCH_BYTE_LEN + 1],
+			bytes [PATCH_MAX_BYTES][PATCH_BYTE_LEN];
+		if (!gamedata.GetKeyValue(patchKey, bytesBuffer, sizeof(bytesBuffer)))
+		{
+			SetFailState("FFA will not work: Could not load \"%s\" memory patch!", patchKey);
+		}
+
+		let payloadLen = ExplodeString(bytesBuffer, PATCH_BYTE_SPLIT, bytes, PATCH_MAX_BYTES, PATCH_BYTE_LEN) - 1;
+
+		this._payload = new int[payloadLen];
+		this._restore = new int[payloadLen];
+
+		let baseAddress = this._address + this._offset;
+
+		for (int i = 0; i < payloadLen; i++)
+		{
+			this._payload[i] = StringToInt(bytes[i + 1], 16);
+			this._restore[i] = LoadFromAddress(baseAddress + view_as<Address>(i), NumberType_Int8);
 		}
 	}
-	
-	public void Toggle()
-	{
-		Address address = this.Get(MemoryIndex_Address);
-#if defined DEBUG
-		LogMessage("Patching address 0x%X...", address);
-#endif
-		
-		for (int i = 0, iMax = this.Get(MemoryIndex_PayloadCount); i < iMax; i++)
-		{
-			Address byte = this.Get(i+MemoryIndex_Max);
-			Address originalByte = view_as<Address>(LoadFromAddress(address+view_as<Address>(i), NumberType_Int8));
-			
-#if defined DEBUG
-			LogMessage("[%i] [%02X] --> [%02X]", i, originalByte, byte);
-#endif
-			this.Set(i+MemoryIndex_Max, originalByte);
-			StoreToAddress(address+view_as<Address>(i), view_as<int>(byte), NumberType_Int8);
-		}
-	}
-	
+
 	public void Enable()
 	{
-		if (this.bEnabled) return;
-		
-		this.Toggle();
-		this.Set(MemoryIndex_Patched, true);
+		if (this._enabled)
+		{
+			return;
+		}
+
+		let baseAddress = this._address + this._offset;
+		for (int i = 0; i < this._payload.size; i++)
+		{
+			StoreToAddress(baseAddress + i, this._payload[i], NumberType_Int8);
+		}
+		this._enabled = true;
 	}
-	
+
 	public void Disable()
 	{
-		if (!this.bEnabled) return;
-		
-		this.Toggle();
-		this.Set(MemoryIndex_Patched, false);
+		if (!this._enabled)
+		{
+			return;
+		}
+
+		let baseAddress = this._address + this._offset;
+		for (int i = 0; i < this._restore.size; i++)
+		{
+			StoreToAddress(baseAddress + i, this._restore[i], NumberType_Int8);
+		}
+		this._enabled = false;
+	}
+
+	property bool Enabled
+	{
+		get()
+		{
+			return this._enabled;
+		}
 	}
 }

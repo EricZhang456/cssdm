@@ -53,9 +53,9 @@ ConVar cssdm_respawn_wait;
 ConVar cssdm_ragdoll_time;
 ConVar cssdm_spawn_method;
 
-MemoryPatch g_LagCompPatch;
-MemoryPatch g_TakeDmgPatch1;
-MemoryPatch g_CalcDomRevPatch;
+MemoryPatch g_LagCompPatch = null;
+MemoryPatch g_TakeDmgPatch1 = null;
+MemoryPatch g_CalcDomRevPatch = null;
 
 GlobalForward g_StartupForward;
 GlobalForward g_ShutdownForward;
@@ -168,11 +168,14 @@ public void OnPluginStart()
 		g_LagCompPatch = new MemoryPatch(gamedata, "WantsLagComp", "LagCompPatch", "LagCompPatch");
 		g_TakeDmgPatch1 = new MemoryPatch(gamedata, "OnTakeDamage", "TakeDmgPatch1", "TakeDmgPatch1");
 		g_CalcDomRevPatch = new MemoryPatch(gamedata, "CalcDominationAndRevenge", "CalcDomRevPatch", "CalcDomRevPatch");
-		if (g_LagCompPatch == null || g_TakeDmgPatch1 == null || g_CalcDomRevPatch == null)
-		{
-			LogError("FFA will not work: Failed to create one or more memory patch(es)!");
-			g_FFAFailed = true;
-		}
+		// FIXME: We use SetFailState in the MemoryPatch constructor for now until there's a better
+		// way to handle exceptions in class constructors
+
+		// if (g_LagCompPatch == null || g_TakeDmgPatch1 == null || g_CalcDomRevPatch == null)
+		// {
+		// 	LogError("FFA will not work: Failed to create one or more memory patch(es)!");
+		// 	g_FFAFailed = true;
+		// }
 	}
 
 	delete gamedata;
