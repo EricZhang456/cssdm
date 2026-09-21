@@ -49,7 +49,7 @@ class MemoryPatch
 		for (let i = 0; i < payloadLen; i++)
 		{
 			this._payload[i] = StringToInt(bytes[i + 1], 16);
-			this._restore[i] = LoadFromAddress(baseAddress + view_as<Address>(i), NumberType_Int8);
+			this._restore[i] = LoadFromAddress(baseAddress + i, NumberType_Int8);
 		}
 	}
 
