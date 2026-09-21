@@ -34,7 +34,6 @@ jobs:
       fail-fast: false
       matrix:
         sm:
-          - label: "1.12"
           - label: "1.13"
         target:
           - os: ubuntu-latest
