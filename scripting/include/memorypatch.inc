@@ -45,7 +45,6 @@ class MemoryPatch
 		this._restore = new int[payloadLen];
 
 		let baseAddress = this._address + this._offset;
-
 		for (let i = 0; i < payloadLen; i++)
 		{
 			this._payload[i] = StringToInt(bytes[i + 1], 16);
@@ -53,11 +52,11 @@ class MemoryPatch
 		}
 	}
 
-	public void Enable()
+	public bool Enable()
 	{
 		if (this._enabled)
 		{
-			return;
+			return false;
 		}
 
 		let baseAddress = this._address + this._offset;
@@ -66,13 +65,15 @@ class MemoryPatch
 			StoreToAddress(baseAddress + i, this._payload[i], NumberType_Int8);
 		}
 		this._enabled = true;
+
+		return true;
 	}
 
-	public void Disable()
+	public bool Disable()
 	{
 		if (!this._enabled)
 		{
-			return;
+			return false;
 		}
 
 		let baseAddress = this._address + this._offset;
@@ -81,6 +82,8 @@ class MemoryPatch
 			StoreToAddress(baseAddress + i, this._restore[i], NumberType_Int8);
 		}
 		this._enabled = false;
+
+		return true;
 	}
 
 	property bool Enabled
