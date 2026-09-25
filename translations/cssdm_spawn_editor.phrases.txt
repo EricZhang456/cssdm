@@ -39,7 +39,12 @@
 	{
 		"en"		"Delete all"
 	}
-	
+
+	"Spawn Editor Disabled"
+	{
+		"en"		"The spawn editor is not enabled."
+	}
+
 	"Spawn Editor Not Available"
 	{
 		"en"		"This command is not available from the server console."

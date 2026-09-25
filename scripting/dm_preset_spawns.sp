@@ -44,12 +44,14 @@ float g_SpawnOrigins[MAX_SPAWNS][3];
 float g_SpawnAngles[MAX_SPAWNS][3];
 Menu g_hSpawnMenu;
 int g_LastLocation[MAXPLAYERS+1];
+ConVar cssdm_enable_spawn_editor;
 
 public void OnPluginStart()
 {
 	LoadTranslations("common.phrases");
 	LoadTranslations("cssdm_spawn_editor.phrases");
 
+	cssdm_enable_spawn_editor = CreateConVar("cssdm_enable_spawn_editor", "0", "Enables the spawn editor");
 	RegAdminCmd("cssdm_spawn_menu", Command_SpawnMenu, ADMFLAG_CHANGEMAP, "Edits CS:S DM spawn points");
 
 	g_hSpawnMenu = new Menu(Menu_EditSpawns, MENU_ACTIONS_DEFAULT | MenuAction_Display | MenuAction_DisplayItem);
@@ -261,6 +263,11 @@ bool DeleteSpawn(int index)
 
 public Action Command_SpawnMenu(int client, int args)
 {
+	if (!cssdm_enable_spawn_editor.BoolValue)
+	{
+		ReplyToCommand(client, "[CSSDM] %t", "Spawn Editor Disabled");
+		return Plugin_Handled;
+	}
 	if (client == 0)
 	{
 		ReplyToCommand(client, "[CSSDM] %t", "Spawn Editor Not Available");
