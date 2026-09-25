@@ -47,17 +47,20 @@ int g_LastLocation[MAXPLAYERS+1];
 
 public void OnPluginStart()
 {
+	LoadTranslations("common.phrases");
+	LoadTranslations("cssdm_spawn_editor.phrases");
+
 	RegAdminCmd("cssdm_spawn_menu", Command_SpawnMenu, ADMFLAG_CHANGEMAP, "Edits CS:S DM spawn points");
 
-	g_hSpawnMenu = new Menu(Menu_EditSpawns);
-	g_hSpawnMenu.SetTitle("Spawn Point Editor");
-	g_hSpawnMenu.AddItem("nearest", "Teleport to nearest");
-	g_hSpawnMenu.AddItem("previous", "Teleport to previous");
-	g_hSpawnMenu.AddItem("next", "Teleport to next");
-	g_hSpawnMenu.AddItem("add", "Add position");
-	g_hSpawnMenu.AddItem("preinsert", "Insert position here");
-	g_hSpawnMenu.AddItem("delete", "Delete nearest");
-	g_hSpawnMenu.AddItem("clear", "Delete all");
+	g_hSpawnMenu = new Menu(Menu_EditSpawns, MENU_ACTIONS_DEFAULT | MenuAction_Display | MenuAction_DisplayItem);
+	g_hSpawnMenu.SetTitle("Spawn Point Editor Title");
+	g_hSpawnMenu.AddItem("nearest", "Teleport Nearest");
+	g_hSpawnMenu.AddItem("previous", "Teleport Previous");
+	g_hSpawnMenu.AddItem("next", "Teleport Next");
+	g_hSpawnMenu.AddItem("add", "Add Position");
+	g_hSpawnMenu.AddItem("preinsert", "Insert Position");
+	g_hSpawnMenu.AddItem("delete", "Delete Nearest");
+	g_hSpawnMenu.AddItem("clear", "Delete All");
 }
 
 public void OnClientPutInServer(int client)
@@ -260,7 +263,7 @@ public Action Command_SpawnMenu(int client, int args)
 {
 	if (client == 0)
 	{
-		ReplyToCommand(client, "[CSSDM] This command is not available from the server console.");
+		ReplyToCommand(client, "[CSSDM] %t", "Spawn Editor Not Available");
 		return Plugin_Handled;
 	}
 
@@ -278,34 +281,50 @@ public void Panel_VerifyDeleteSpawns(Menu menu, MenuAction action, int param1, i
 			g_SpawnCount = 0;
 			if (!WriteMapConfig())
 			{
-				PrintToChat(param1, "[CSSDM] Could not write to spawn config file.");
+				PrintToChat(param1, "[CSSDM] %t", "Spawn Editor Config Read Only");
 			} else {
-				PrintToChat(param1, "[CSSDM] All spawn points have been deleted.");
+				PrintToChat(param1, "[CSSDM] %t", "Spawn Editor Deleted All");
 			}
 		}
 		g_hSpawnMenu.Display(param1, MENU_TIME_FOREVER);
 	}
 }
 
-public void Menu_EditSpawns(Menu menu, MenuAction action, int param1, int param2)
+public int Menu_EditSpawns(Menu menu, MenuAction action, int param1, int param2)
 {
-	if (action == MenuAction_Select)
+	if (action == MenuAction_Display)
+	{
+		char title[128], translated[128];
+		menu.GetTitle(title, sizeof(title));
+
+		Panel panel = view_as<Panel>(param2);
+		Format(translated, sizeof(translated), "%T", title, param1);
+		panel.SetTitle(translated);
+	}
+	else if (action == MenuAction_DisplayItem)
+	{
+		char display[128], translated[128];
+		menu.GetItem(param2, "", 0, _, display, sizeof(display));
+		Format(translated, sizeof(translated), "%T", display, param1);
+		return RedrawMenuItem(translated);
+	}
+	else if (action == MenuAction_Select)
 	{
 		if (param2 == 0)
 		{
 			int index = GetNearestSpawn(param1);
 			if (index == -1)
 			{
-				PrintToChat(param1, "[CSSDM] There are no spawn points.");
+				PrintToChat(param1, "[CSSDM] %t", "Spawn Editor No Spawn Points");
 			} else {
 				TeleportEntity(param1, g_SpawnOrigins[index], g_SpawnAngles[index], NULL_VECTOR);
-				PrintToChat(param1, "[CSSDM] Teleported to spawn #%d (%d total).", index, g_SpawnCount);
+				PrintToChat(param1, "[CSSDM] %t", "Spawn Editor Teleported To Spawn", index, g_SpawnCount);
 				g_LastLocation[param1] = index;
 			}
 		} else if (param2 == 2) {
 			if (g_SpawnCount == 0)
 			{
-				PrintToChat(param1, "[CSSDM] There are no spawn points.");
+				PrintToChat(param1, "[CSSDM] %t", "Spawn Editor No Spawn Points");
 			} else {
 				int index = g_LastLocation[param1] + 1;
 				if (index >= g_SpawnCount)
@@ -313,13 +332,13 @@ public void Menu_EditSpawns(Menu menu, MenuAction action, int param1, int param2
 					index = 0;
 				}
 				TeleportEntity(param1, g_SpawnOrigins[index], g_SpawnAngles[index], NULL_VECTOR);
-				PrintToChat(param1, "[CSSDM] Teleported to spawn #%d (%d total).", index, g_SpawnCount);
+				PrintToChat(param1, "[CSSDM] %t", "Spawn Editor Teleported To Spawn", index, g_SpawnCount);
 				g_LastLocation[param1] = index;
 			}
 		} else if (param2 == 1) {
 			if (g_SpawnCount == 0)
 			{
-				PrintToChat(param1, "[CSSDM] There are no spawn points.");
+				PrintToChat(param1, "[CSSDM] %t", "Spawn Editor No Spawn Points");
 			} else {
 				int index = g_LastLocation[param1] - 1;
 				if (index < 0)
@@ -327,24 +346,24 @@ public void Menu_EditSpawns(Menu menu, MenuAction action, int param1, int param2
 					index = g_SpawnCount - 1;
 				}
 				TeleportEntity(param1, g_SpawnOrigins[index], g_SpawnAngles[index], NULL_VECTOR);
-				PrintToChat(param1, "[CSSDM] Teleported to spawn #%d (%d total).", index, g_SpawnCount);
+				PrintToChat(param1, "[CSSDM] %t", "Spawn Editor Teleported To Spawn", index, g_SpawnCount);
 				g_LastLocation[param1] = index;
 			}
 		} else if (param2 == 5) {
 			int index = GetNearestSpawn(param1);
 			if (index == -1)
 			{
-				PrintToChat(param1, "[CSSDM] There are no spawn points.");
+				PrintToChat(param1, "[CSSDM] %t", "Spawn Editor No Spawn Points");
 			} else {
 				if (!DeleteSpawn(index))
 				{
-					PrintToChat(param1, "[CSSDM] Could not delete spawn #%d.", index);
+					PrintToChat(param1, "[CSSDM] %t", "Spawn Editor Could Not Delete Spawn", index);
 				} else {
 					if (!WriteMapConfig())
 					{
-						PrintToChat(param1, "[CSSDM] Could not write to spawn config file!");
+						PrintToChat(param1, "[CSSDM] %t", "Spawn Editor Config Read Only");
 					} else {
-						PrintToChat(param1, "[CSSDM] Deleted spawn #%d (%d total).", index, g_SpawnCount);
+						PrintToChat(param1, "[CSSDM] %t", "Spawn Editor Deleted Spawn", index, g_SpawnCount);
 					}
 				}
 			}
@@ -352,13 +371,13 @@ public void Menu_EditSpawns(Menu menu, MenuAction action, int param1, int param2
 			int index;
 			if ((index = AddSpawnFromClient(param1)) == -1)
 			{
-				PrintToChat(param1, "[CSSDM] Could not add spawn (max limit reached).");
+				PrintToChat(param1, "[CSSDM] %t", "Spawn Editor Max Spawn Points Reached");
 			} else {
 				if (!WriteMapConfig())
 				{
-					PrintToChat(param1, "[CSSDM] Could not write to spawn config file!");
+					PrintToChat(param1, "[CSSDM] %t", "Spawn Editor Config Read Only");
 				} else {
-					PrintToChat(param1, "[CSSDM] Added spawn #%d (%d total).", index, g_SpawnCount);
+					PrintToChat(param1, "[CSSDM] %t", "Spawn Editor Added Spawn", index, g_SpawnCount);
 				}
 			}
 		} else if (param2 == 4) {
@@ -371,11 +390,11 @@ public void Menu_EditSpawns(Menu menu, MenuAction action, int param1, int param2
 			}
 			if ((index = InsertSpawnFromClient(param1, pre, index)) == -1)
 			{
-				PrintToChat(param1, "[CSSDM] Could not add spawn (max limit reached).");
+				PrintToChat(param1, "[CSSDM] %t", "Spawn Editor Max Spawn Points Reached");
 			} else {
 				if (!WriteMapConfig())
 				{
-					PrintToChat(param1, "[CSSDM] Could not write to spawn config file!");
+					PrintToChat(param1, "[CSSDM] %t", "Spawn Editor Config Read Only");
 				} else {
 					PrintToChat(param1, "[CSSDM] Inserted spawn at #%d (%d total).", index, g_SpawnCount);
 				}
@@ -383,16 +402,22 @@ public void Menu_EditSpawns(Menu menu, MenuAction action, int param1, int param2
 		} else if (param2 == 6) {
 			/* Of course, we ask the user first. */
 			Panel panel = new Panel();
-			panel.SetTitle("Delete all spawn points?");
-			panel.DrawItem("Yes");
-			panel.DrawItem("No");
+			char title[128], yes[64], no[64];
+			Format(title, sizeof(title), "%T", "Spawn Editor Delete All Spawn Points", param1);
+			Format(yes, sizeof(yes), "%T", "Yes", param1);
+			Format(no, sizeof(no), "%T", "No", param1);
+			panel.SetTitle(title);
+			panel.DrawItem(yes);
+			panel.DrawItem(no);
 			panel.Send(param1, Panel_VerifyDeleteSpawns, MENU_TIME_FOREVER);
 			delete panel;
-			return;
+			return 0;
 		}
 		/* Redraw the menu */
 		g_hSpawnMenu.Display(param1, MENU_TIME_FOREVER);
 	}
+
+	return 0;
 }
 
 public void DM_OnStartup()
