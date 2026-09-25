@@ -444,14 +444,13 @@ public void Event_PlayerDeath(Event event, const char[] name, bool dontBroadcast
 
 	if (forwardResult == Plugin_Continue)
 	{
-		g_PlayerRespawnTimers[client] = CreateTimer(cssdm_ragdoll_time.FloatValue, Timer_PlayerRespawn, GetClientSerial(client));
+		g_PlayerRespawnTimers[client] = CreateTimer(cssdm_ragdoll_time.FloatValue, Timer_PlayerRespawn, client);
 	}
 }
 
-public Action Timer_PlayerRespawn(Handle timer, int serial)
+public Action Timer_PlayerRespawn(Handle timer, int client)
 {
-	int client = GetClientFromSerial(serial);
-	if (client >= 0 && IsClientInGame(client))
+	if (client > 0 && IsClientInGame(client))
 	{
 		if (cssdm_enabled.BoolValue && !g_InRoundRestart)
 		{
