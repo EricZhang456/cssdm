@@ -67,7 +67,7 @@ GlobalForward g_OnClientSetSpawnMethodForward;
 int g_GameRulesHookID = INVALID_HOOK_ID;
 bool g_FFAFailed = false;
 bool g_InRoundRestart = false;
-bool g_SkipNextPlayerSpawnCallback = false;
+bool g_SkipNextPlayerSpawnCallback[MAXPLAYERS] = { false, ... };
 Handle g_PlayerRespawnTimers[MAXPLAYERS] = { null, ... };
 
 DynamicHook g_IPointsForKillHook;
@@ -257,7 +257,7 @@ public void OnClientDisconnect(int client)
 
 public void OnMapStart()
 {
-	g_SkipNextPlayerSpawnCallback = false;
+	ResetSkipSpawnCallback();
 	if (!g_IsCSGO)
 	{
 		g_GameRulesHookID = g_IPointsForKillHook.HookGamerules(Hook_Pre, Hook_OnIPointsForKill);
@@ -270,7 +270,7 @@ public void OnMapStart()
 
 public void OnMapEnd()
 {
-	g_SkipNextPlayerSpawnCallback = false;
+	ResetSkipSpawnCallback();
 	if (!g_IsCSGO && g_GameRulesHookID != INVALID_HOOK_ID)
 	{
 		DynamicHook.RemoveHook(g_GameRulesHookID);
@@ -382,7 +382,7 @@ bool ParseWeaponConfig(const char[] configPath, char[] error, int err_max)
 
 void KillPlayerRespawnTimer(int client)
 {
-	if (client < 0)
+	if (client <= 0)
 	{
 		return;
 	}
@@ -390,6 +390,14 @@ void KillPlayerRespawnTimer(int client)
 	{
 		delete g_PlayerRespawnTimers[client];
 		g_PlayerRespawnTimers[client] = null;
+	}
+}
+
+void ResetSkipSpawnCallback()
+{
+	for (int i = 0; i < MAXPLAYERS; i++)
+	{
+		g_SkipNextPlayerSpawnCallback[i] = false;
 	}
 }
 
@@ -402,7 +410,7 @@ public void Event_PlayerDeath(Event event, const char[] name, bool dontBroadcast
 	}
 
 	int client = GetClientOfUserId(event.GetInt("userid"));
-	if (client < 0 || !IsClientInGame(client))
+	if (client <= 0 || !IsClientInGame(client))
 	{
 		return;
 	}
@@ -470,18 +478,19 @@ public Action Timer_CleanUpRagdoll(Handle timer, int ragdollRef)
 
 public void Event_PlayerSpawn(Event event, const char[] name, bool dontBroadcast)
 {
-	if (g_SkipNextPlayerSpawnCallback)
-	{
-		g_SkipNextPlayerSpawnCallback = false;
-		return;
-	}
-	if (!cssdm_enabled.BoolValue || g_InRoundRestart)
+	int client = GetClientOfUserId(event.GetInt("userid"));
+	if (client <= 0 || !IsClientInGame(client))
 	{
 		return;
 	}
 
-	int client = GetClientOfUserId(event.GetInt("userid"));
-	if (client < 0 || !IsClientInGame(client))
+	if (g_SkipNextPlayerSpawnCallback[client])
+	{
+		g_SkipNextPlayerSpawnCallback[client] = false;
+		return;
+	}
+
+	if (!cssdm_enabled.BoolValue || g_InRoundRestart)
 	{
 		return;
 	}
@@ -492,7 +501,6 @@ public void Event_PlayerSpawn(Event event, const char[] name, bool dontBroadcast
 	{
 		return;
 	}
-
 
 	KillPlayerRespawnTimer(client);
 
@@ -643,11 +651,11 @@ public int Native_RespawnClient(Handle plugin, int numParams)
 		return ThrowNativeError(SP_ERROR_NATIVE, "Client %d is not in game", client);
 	}
 
-	// this will probably cause some race condition, but we don't this param anyways
+	// hopefully this won't cause some race condition 
 	bool fullRespawn = GetNativeCell(2);
 	if (!fullRespawn)
 	{
-		g_SkipNextPlayerSpawnCallback = true;
+		g_SkipNextPlayerSpawnCallback[client] = true;
 	}
 
 	CS_RespawnPlayer(client);
