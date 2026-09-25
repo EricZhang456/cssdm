@@ -502,8 +502,6 @@ public void Event_PlayerSpawn(Event event, const char[] name, bool dontBroadcast
 		return;
 	}
 
-	KillPlayerRespawnTimer(client);
-
 	Call_StartForward(g_OnClientSpawnedForward);
 	Call_PushCell(client);
 	Call_Finish();
