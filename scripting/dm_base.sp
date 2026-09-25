@@ -451,14 +451,11 @@ public void Event_PlayerDeath(Event event, const char[] name, bool dontBroadcast
 
 public Action Timer_PlayerRespawn(Handle timer, int client)
 {
-	if (client > 0)
+	if (cssdm_enabled.BoolValue && !g_InRoundRestart && IsClientInGame(client))
 	{
-		if (cssdm_enabled.BoolValue && !g_InRoundRestart && IsClientInGame(client))
-		{
-			CS_RespawnPlayer(client);
-		}
-		g_PlayerRespawnTimers[client] = null;
+		CS_RespawnPlayer(client);
 	}
+	g_PlayerRespawnTimers[client] = null;
 	return Plugin_Continue;
 }
 
