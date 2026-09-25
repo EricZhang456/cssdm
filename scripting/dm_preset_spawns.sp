@@ -436,7 +436,7 @@ public void DM_OnClientSpawned(int client)
 	int startPoint = GetRandomInt(0, g_SpawnCount-1);
 
 	/* Prefetch player origins */
-	float origins[65][3];
+	float origins[MAXPLAYERS + 1][3];
 	int numToCheck = 0;
 
 	for (int i=1; i<=MaxClients; i++)
