@@ -520,6 +520,7 @@ public void Event_RoundStart(Event event, const char[] name, bool dontBroadcast)
 public void Event_RoundEnd(Event event, const char[] name, bool dontBroadcast)
 {
 	g_InRoundRestart = true;
+	ResetSkipSpawnCallback();
 	for (int i = 0; i <= MaxClients; i++)
 	{
 		KillPlayerRespawnTimer(i);
