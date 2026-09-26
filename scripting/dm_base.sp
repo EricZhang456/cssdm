@@ -493,8 +493,8 @@ public void Event_PlayerSpawn(Event event, const char[] name, bool dontBroadcast
 	}
 
 	// IsClientObserver will always return false on css for some reason
-	bool isClientObserver = GetClientTeam(client) != CS_TEAM_T && GetClientTeam(client) != CS_TEAM_CT;
-	if (isClientObserver)
+	int team = GetClientTeam(client);
+	if (team != CS_TEAM_T && team != CS_TEAM_CT)
 	{
 		return;
 	}
