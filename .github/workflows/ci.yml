@@ -59,11 +59,7 @@ jobs:
         run: |
           echo "SOURCEMOD_BIN=$GITHUB_WORKSPACE/sm_bin" >> $GITHUB_ENV
 
-      - name: Build (Linux)
-        if: matrix.target.os_name == 'linux'
-        env:
-          CC: clang-22
-          CXX: clang++-22
+      - name: Build
         run: |
           python3 ./configure.py \
             -o build
